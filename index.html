@@ -3411,5 +3411,147 @@ try{build();marks()}catch(e){}
 })();
 </script>
 
+<script>
+/* ══ v30: hoteles editables (cambio de alojamiento, direcciones, notas) ══ */
+(function(){
+let HEDIT={};
+if(!SYNC_KEYS.includes('j26_hedit'))SYNC_KEYS.push('j26_hedit');
+const ORIG_HOTELES=HOTELES.map(h=>h.slice());
+function applyHedit(){HOTELES.forEach((h,i)=>{const e=HEDIT[i];if(!e)return;
+ h[0]=e.n||ORIG_HOTELES[i][0];h[1]=e.tag||ORIG_HOTELES[i][1];
+ h[2]=e.dir||ORIG_HOTELES[i][2];h[3]=(e.dirjp!==undefined?e.dirjp:ORIG_HOTELES[i][3])||null;
+ h[4]=e.meta||ORIG_HOTELES[i][4];h[5]=e.n||ORIG_HOTELES[i][5];});}
+function refreshHomeHotel(){const nc=document.getElementById('nochecard');if(!nc)return;
+ const now=new Date();
+ if(now<START){
+  nc.innerHTML='<div class="l"><small>\ud83d\udecf Primera noche (13 sep)</small><b>'+esc(HOTELES[0][0])+'</b><span style="color:var(--muted);font-size:12.5px">Osaka</span></div>'
+   +'<a class="btn g mini" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(HOTELES[0][5])+'">Maps</a>';
+ }else if(now<=END){
+  const di=Math.floor((now-START)/864e5);const h=hotelDeNoche(di);
+  nc.innerHTML=h?('<div class="l"><small>\ud83d\udecf Esta noche dorm\u00eds en</small><b>'+esc(h[0])+'</b><span style="color:var(--muted);font-size:12.5px">'+esc(h[1].split('\u00b7')[0])+'</span></div>'
+   +'<a class="btn g mini" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(h[5])+'">Maps</a>'):'';
+  if(di<DAYS.length-1)nc.innerHTML+='<div style="width:100%;border-top:1px solid #eef0f7;margin-top:11px;padding-top:10px;font-size:13.5px;font-weight:700;cursor:pointer" onclick="openDay('+(di+1)+')">Ma\u00f1ana: '+esc(DAYS[di+1].t)+' \u203a</div>';
+ }}
+/* editor dentro de la pantalla de Hoteles */
+const _ohV30=openHoteles;
+window.openHoteles=function(){_ohV30();
+ const host=document.getElementById('sheetInner');if(!host)return;
+ const cards=host.querySelectorAll('.card');
+ cards.forEach((card,i)=>{
+  if(card.querySelector('.hedit-btn'))return;
+  const row=card.querySelector('.btnrow');if(!row)return;
+  const eb=document.createElement('button');eb.className='pillb hedit-btn';eb.textContent='\u270f\ufe0f Editar';
+  const rb=document.createElement('button');rb.className='pillb hedit-btn';rb.textContent='\u21ba Restaurar original';
+  rb.style.marginLeft='6px';
+  row.after(eb);eb.after(rb);
+  eb.onclick=()=>{
+   const old=card.querySelector('.heditform');if(old){old.remove();return}
+   const h=HOTELES[i];
+   const f=document.createElement('div');f.className='card gform heditform';
+   f.innerHTML='<h3>\u270f\ufe0f Editar alojamiento</h3>'
+    +'<label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Nombre</label><input id="he_n" value="'+esc(h[0])+'">'
+    +'<label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Ciudad / fechas</label><input id="he_tag" value="'+esc(h[1])+'">'
+    +'<label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Direcci\u00f3n</label><input id="he_dir" value="'+esc(h[2]||'')+'">'
+    +'<label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Direcci\u00f3n en japon\u00e9s (opcional)</label><input id="he_dirjp" value="'+esc(h[3]||'')+'">'
+    +'<label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Nota</label><input id="he_meta" value="'+esc(h[4]||'')+'">'
+    +'<button class="btn" id="he_save" style="width:100%;margin-top:11px">Guardar</button>';
+   eb.after(f);
+   f.querySelector('#he_save').onclick=async()=>{
+    const g=id=>f.querySelector('#'+id).value.trim();
+    HEDIT[i]={n:g('he_n'),tag:g('he_tag'),dir:g('he_dir'),dirjp:g('he_dirjp'),meta:g('he_meta')};
+    await stSet('j26_hedit',HEDIT);applyHedit();refreshHomeHotel();hap(15);
+    openHoteles();};};
+  rb.onclick=async()=>{if(!HEDIT[i])return;
+   delete HEDIT[i];await stSet('j26_hedit',HEDIT);applyHedit();refreshHomeHotel();hap(12);
+   openHoteles();};});};
+/* también refrescar el bloque de hotel dentro de cada día abierto */
+const _odV30=openDay;
+window.openDay=function(pos){_odV30(pos);
+ const host=document.getElementById('sheetInner');if(!host)return;
+ host.querySelectorAll('b').forEach(()=>{});/* no-op: el día ya lee HOTELES en vivo vía hotelDeNoche */};
+(async()=>{HEDIT=await stGet('j26_hedit')||{};applyHedit();refreshHomeHotel();})();
+})();
+</script>
+
+<script>
+/* ══ v31: sincronización en tiempo real con Firebase (opt-in, sala privada de 2) ══ */
+(function(){
+const FCFG={apiKey:"AIzaSyD913aVlLfQ_m3cInBV5bOzAxx3b0CxOlE",authDomain:"japan-guide-e4563.firebaseapp.com",projectId:"japan-guide-e4563",storageBucket:"japan-guide-e4563.firebasestorage.app",messagingSenderId:"1037985701761",appId:"1:1037985701761:web:315d89466929983f101280"};
+const SELF_ID=Math.random().toString(36).slice(2,10);
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+let fbReady=false,db=null,ROOM=null,unsub=null,firstSnap=false,pushTimer=null,reloadTimer=null,applyingRemote=false;
+async function ensureFirebase(){if(fbReady)return;
+ await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+ await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js');
+ firebase.initializeApp(FCFG);db=firebase.firestore();
+ try{await db.enablePersistence({synchronizeTabs:true})}catch(e){}
+ fbReady=true;}
+async function buildExportData(){
+ const data={_v:1,_fecha:new Date().toISOString(),_origin:SELF_ID};
+ for(const k of SYNC_KEYS){const v=await stGet(k);if(v!=null)data[k]=v}
+ for(let i=0;i<DAYS.length;i++){const v=await stGet('j26_diario_'+i);if(v)data['j26_diario_'+i]=v}
+ for(const id of Object.keys(P)){const v=await stGet('j26_pnota_'+id);if(v)data['j26_pnota_'+id]=v}
+ return data;}
+const _stSetBase=window.stSet;
+async function stSetLocal(k,v){await _stSetBase(k,v)}
+async function mergeApply(data){
+ for(const[k,v]of Object.entries(data)){if(k.startsWith('_'))continue;
+  const mine=await stGet(k);
+  if(mine==null){await stSetLocal(k,v);continue}
+  if(k==='j26_vis'||k==='j26_fav'||k==='j26_todos'){await stSetLocal(k,Object.assign({},v,mine))}
+  else if(k==='j26_priv'){const out=Object.assign({},mine);Object.entries(v).forEach(([a,b])=>{if(!out[a]||!(''+out[a]).trim())out[a]=b});await stSetLocal(k,out)}
+  else if(k==='j26_custom'){const out={places:Object.assign({},(v||{}).places,(mine||{}).places),imgs:Object.assign({},(v||{}).imgs,(mine||{}).imgs)};await stSetLocal(k,out)}
+  else if(typeof v==='string'&&typeof mine==='string'&&mine.trim()&&v.trim()&&mine.trim()!==v.trim()){await stSetLocal(k,mine+'\n\u2014 \u2014 \u2014\n'+v)}}}
+window.stSet=async function(k,v){await _stSetBase(k,v);if(ROOM&&!applyingRemote)schedulePush();};
+function schedulePush(){if(!firstSnap||!db)return;clearTimeout(pushTimer);
+ pushTimer=setTimeout(async()=>{const data=await buildExportData();
+  try{await db.collection('rooms').doc(ROOM).set(data)}catch(e){}},1200);}
+function toast(msg){let t=document.getElementById('fbtoast');
+ if(!t){t=document.createElement('div');t.id='fbtoast';
+  t.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1c1916;color:#e3b04b;border:1px solid #4a4336;border-radius:999px;padding:9px 16px;font-family:Quicksand,sans-serif;font-weight:700;font-size:13px;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:86%;text-align:center';
+  document.body.appendChild(t);}
+ t.textContent=msg;t.style.display='block';}
+async function connectRoom(room){
+ await ensureFirebase();ROOM=room;localStorage.setItem('j26_room',room);
+ if(unsub)unsub();
+ unsub=db.collection('rooms').doc(room).onSnapshot(async snap=>{
+  if(snap.metadata.hasPendingWrites)return;
+  const wasFirst=!firstSnap;firstSnap=true;
+  if(!snap.exists){if(wasFirst)schedulePush();return}
+  const remote=snap.data();
+  if(remote._origin===SELF_ID)return;
+  applyingRemote=true;await mergeApply(remote);applyingRemote=false;
+  toast('\ud83d\udd04 Cambios de tu pareja recibidos');
+  clearTimeout(reloadTimer);reloadTimer=setTimeout(()=>location.reload(),2000);
+ },()=>{toast('\u26a0\ufe0f Sin conexi\u00f3n con la sala \u2014 reintentando')});}
+function genRoom(){return (Math.random().toString(36).slice(2,8)+Math.random().toString(36).slice(2,8)).slice(0,12)}
+function buildRoomUI(){
+ const mv=document.getElementById('tab-mv');if(!mv)return;
+ const host=[...mv.querySelectorAll('.card')].find(c=>c.querySelector('h3')&&c.querySelector('h3').textContent.includes('Sincronizar'));
+ if(!host||host.querySelector('.roomui'))return;
+ const box=document.createElement('div');box.className='roomui';box.style.cssText='border-top:1px solid #eef0f7;margin-top:13px;padding-top:12px';
+ const saved=localStorage.getItem('j26_room');
+ if(saved){
+  box.innerHTML='<p class="hint" style="margin-bottom:8px">\ud83d\udd04 <b style="color:var(--pri)">Sincronizaci\u00f3n autom\u00e1tica activa</b><br>Sala: <code>'+esc(saved)+'</code></p>'
+   +'<div class="rowbtns"><button class="pillb" id="rb_copy">\ud83d\udccb Copiar c\u00f3digo de sala</button><button class="pillb" id="rb_leave">Salir de la sala</button></div>';
+  box.querySelector('#rb_copy').onclick=async()=>{try{await navigator.clipboard.writeText(saved);hap(10)}catch(e){}};
+  box.querySelector('#rb_leave').onclick=()=>{if(!confirm('\u00bfSalir de la sala? Dejar\u00e1s de sincronizar autom\u00e1ticamente (tus datos locales no se borran).'))return;
+   localStorage.removeItem('j26_room');if(unsub)unsub();ROOM=null;location.reload();};
+  connectRoom(saved);
+ }else{
+  box.innerHTML='<p class="hint" style="margin-bottom:8px">\u00bfPrefer\u00eds que se sincronice sola, sin copiar c\u00f3digos? Cread una sala privada (solo quien tenga el c\u00f3digo entra).</p>'
+   +'<div class="rowbtns"><button class="pillb ok" id="rb_new">\ud83c\udd95 Crear sala nueva</button></div>'
+   +'<div style="display:flex;gap:8px;margin-top:8px"><input id="rb_code" placeholder="C\u00f3digo de sala recibido\u2026" style="flex:1;background:var(--bg);border:none;border-radius:11px;padding:10px 12px;font-family:Quicksand,sans-serif;font-weight:700;color:var(--ink)"><button class="pillb" id="rb_join">Unirme</button></div>';
+  box.querySelector('#rb_new').onclick=async()=>{const r=genRoom();hap(15);await connectRoom(r);refreshRoomUI();};
+  box.querySelector('#rb_join').onclick=async()=>{const v=box.querySelector('#rb_code').value.trim();if(!v){hap(30);return}
+   hap(12);await connectRoom(v);refreshRoomUI();};
+ }
+ host.appendChild(box);}
+function refreshRoomUI(){const mv=document.getElementById('tab-mv');if(!mv)return;
+ const old=mv.querySelector('.roomui');if(old)old.remove();buildRoomUI();}
+(function initIfSaved(){const tryBuild=()=>{if(document.getElementById('tab-mv'))buildRoomUI();else setTimeout(tryBuild,400)};tryBuild();})();
+})();
+</script>
+
 </body>
 </html>
