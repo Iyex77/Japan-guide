@@ -3695,7 +3695,6 @@ function ensureLightbox(){
 function openLightbox(src){const lb=ensureLightbox();lb.querySelector('img').src=src;lb.classList.add('on');}
 async function loadThumb(img,id){
  const custom=PC&&PC.imgs&&PC.imgs[id];
- img.onclick=e=>{e.stopPropagation();openLightbox(img.src)};
  if(custom){img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();img.src=custom;return;}
  try{await bootFotos();
   const t=WIKI[id],url=t&&FOTOURLS?FOTOURLS[t]:'';
@@ -4110,27 +4109,30 @@ window.rrow=function(r,shop){const q=mapsQ(r);const nm=esc(r.n).replace(/'/g,"\\
  +'<a class="ib pin" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+q+'">📍</a>'
  +'<a class="ib pin" target="_blank" rel="noopener" href="https://maps.apple.com/?q='+q+'">🍎</a></div></div>'};
 
-/* 2) foto en vez de kanji en Lugares, cuando exista */
-window.renderLug=function(){
- const q=($('#q').value||'').toLowerCase();const r=$('#lugares');r.innerHTML='';
- CITY_ORDER.forEach(city=>{
-  const items=Object.entries(P).filter(([id,p])=>p.city===city&&(curCat==="Todos"||p.cat===curCat)&&(!q||p.n.toLowerCase().includes(q)));
-  if(!items.length)return;
-  const h=document.createElement('div');h.className='cityh';
-  h.innerHTML='<span class="st">'+(CITY_IC[city]||'📍')+'</span><b>'+city+'</b>';r.appendChild(h);
-  items.forEach(([id,p])=>{const el=document.createElement('div');el.className='pl';
-   const maps='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.n+' '+p.city+' Japan');
-   const custom=(PC.imgs||{})[id];
-   const wikiT=window.WIKI&&WIKI[id];const cached=wikiT&&window.FOTOURLS&&FOTOURLS[wikiT];
-   const src=custom||cached||'';
-   el.innerHTML='<div class="ki" style="background:'+(CAT_COL[p.cat]||'#3d5af1')+'">'
-    +(src?'<img src="'+esc(src)+'" alt="" onerror="this.parentElement.textContent=\''+esc(p.k)+'\'">':esc(p.k))+'</div>'
-   +'<div class="tt"><b>'+esc(p.n)+'</b><small>'+esc(p.cat)+' · '+esc(p.dia)+(p.gos?' · 御朱印':'')+'</small></div>'
-   +'<div class="btns"><button class="info">ℹ Info</button><a class="maps" target="_blank" rel="noopener" href="'+maps+'">📍</a></div>';
-   el.querySelector('.info').onclick=()=>openPlace(id);r.appendChild(el);
-   if(!src&&wikiT){(async()=>{try{await bootFotos();const url=FOTOURLS&&FOTOURLS[wikiT];
-    if(url){const img=document.createElement('img');img.alt='';img.onerror=()=>img.remove();img.src=url;
-     const ki=el.querySelector('.ki');ki.textContent='';ki.appendChild(img);}}catch(e){}})();}});});};
+/* 2) foto en vez de kanji en Lugares — SIN reescribir renderLug entero (eso rompía la cadena real:
+   progreso de visitados, favoritos, decorateLug/collapseLug/applePins/fixApple que ya existían) */
+function decorateLugPhotos(){
+ const host=document.getElementById('lugares');if(!host)return;
+ let city='';
+ Array.from(host.children).forEach(el=>{
+  if(el.classList.contains('cityh')){const b=el.querySelector('b');city=b?b.textContent.trim():'';return;}
+  if(!el.classList||!el.classList.contains('pl'))return;
+  const ki=el.querySelector('.ki');if(!ki||ki.querySelector('img'))return;
+  const nameEl=el.querySelector('.tt b');if(!nameEl)return;
+  const name=nameEl.textContent.replace('⭐','').trim();
+  const entry=Object.entries(P).find(([,p])=>p.city===city&&p.n===name);
+  if(!entry)return;
+  const [id]=entry;
+  const custom=(PC.imgs||{})[id];
+  const wikiT=(typeof WIKI!=='undefined')?WIKI[id]:null;
+  const cached=wikiT&&(typeof FOTOURLS!=='undefined')&&FOTOURLS&&FOTOURLS[wikiT];
+  const src=custom||cached;
+  const swap=url=>{const img=document.createElement('img');img.alt='';img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();img.src=url;ki.textContent='';ki.appendChild(img);};
+  if(src){swap(src);return;}
+  if(wikiT){(async()=>{try{await bootFotos();const url=FOTOURLS&&FOTOURLS[wikiT];if(url)swap(url);}catch(e){}})();}
+ });}
+const _rlPhoto=renderLug;
+window.renderLug=function(){_rlPhoto();try{decorateLugPhotos();}catch(e){}};
 
 /* 3) las 3 menciones de tienda del itinerario que aún eran solo texto: las enlazo a su ficha de SHOP para que puedan llevar foto */
 try{
@@ -4152,6 +4154,36 @@ function foodThumb(pos){
   img.onerror=()=>img.remove();img.src=photo;
   li.classList.add('hasThumb');li.appendChild(img);li.appendChild(body);});}
 const _odFood=openDay;openDay=function(pos){_odFood(pos);foodThumb(pos);};
+})();
+</script>
+
+<style>
+#zoomLB{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+#zoomLB.on{display:flex}
+#zoomLB img{max-width:100%;max-height:100%;border-radius:12px;object-fit:contain}
+#zoomLB .zx{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:999px;width:40px;height:40px;font-size:21px;cursor:pointer}
+img.pfoto,img.rthumb,img.actThumb,img.semThumb,.ki img{cursor:zoom-in}
+</style>
+<script>
+/* ══ v40: zoom global — CUALQUIER imagen real (ficha, restaurante, tienda, Lugares, itinerario, semáforo…) se agranda al tocarla ══ */
+(function(){
+function lb(){let el=document.getElementById('zoomLB');
+ if(el)return el;
+ el=document.createElement('div');el.id='zoomLB';
+ el.innerHTML='<button class="zx" aria-label="Cerrar">✕</button><img alt="">';
+ el.addEventListener('click',()=>el.classList.remove('on'));
+ document.body.appendChild(el);return el;}
+function zoom(src){const el=lb();const img=el.querySelector('img');img.referrerPolicy='no-referrer';img.src=src;el.classList.add('on');}
+/* delegación: un único listener capta el clic sobre cualquier imagen con contenido real */
+document.addEventListener('click',e=>{
+ const img=e.target.closest('img');if(!img)return;
+ if(img.closest('#zoomLB'))return;                 /* la propia imagen ampliada no */
+ const src=img.currentSrc||img.getAttribute('src');
+ if(!src||src.startsWith('data:'))return;          /* iconos base64/vacíos, no */
+ if(img.naturalWidth&&img.naturalWidth<24)return;  /* micro-iconos, no */
+ e.stopPropagation();                              /* que no dispare abrir la ficha de detrás */
+ zoom(src);
+},true);
 })();
 </script>
 
