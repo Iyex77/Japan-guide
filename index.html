@@ -3717,6 +3717,7 @@ async function loadThumb(img,id){
   else img.remove();
  }catch(e){img.remove();}
 }
+window.__loadThumb=loadThumb;
 function wrapWithThumb(el,bodyClass,thumbClass,id){
  if(el.classList.contains('hasThumb'))return;
  const body=document.createElement('div');body.className=bodyClass;
@@ -4120,37 +4121,23 @@ function idFromRow(el){
   const m=/openPlace\(['"]([^'"]+)['"]\)/.exec(btn.onclick.toString());
   if(m)return m[1];}
  return null;}
-function putLugPhoto(ki,id,url){
- if(!ki||ki.querySelector('img'))return;
- const img=document.createElement('img');img.alt='';img.referrerPolicy='no-referrer';
- img.onerror=()=>{img.remove();ki.textContent=(P[id]&&P[id].k)||'';};
- img.src=url;ki.textContent='';ki.appendChild(img);}
-async function paintLugPhotosOnce(){
- const host=document.getElementById('lugares');if(!host)return 0;
- let pending=0;
+/* Lugares usa EXACTAMENTE el mismo mecanismo que el itinerario: mete un <img> vacío en el .ki
+   y deja que __loadThumb le ponga la foto cuando llegue (o lo quite y deje el kanji si no hay). */
+function decorateLugPhotos(){
+ const host=document.getElementById('lugares');if(!host)return;
  host.querySelectorAll('.pl').forEach(el=>{
-  const ki=el.querySelector('.ki');if(!ki||ki.querySelector('img'))return;
+  const ki=el.querySelector('.ki');if(!ki||ki.dataset.fotoTried==='1')return;
   const id=idFromRow(el);if(!id||!P[id])return;
-  const custom=(PC.imgs||{})[id];
-  const t=(typeof WIKI!=='undefined')?WIKI[id]:null;
-  const cached=t&&FOTOURLS?FOTOURLS[t]:'';
-  const url=custom||cached;
-  if(url)putLugPhoto(ki,id,url);
-  else if(t)pending++;   /* tiene página en Wikipedia pero aún no hay URL: reintentar luego */
- });
- return pending;}
-async function decorateLugPhotos(){
- if(!document.getElementById('lugares'))return;
- await paintLugPhotosOnce();                 /* 1ª pasada: personalizadas + lo ya cacheado */
- try{await bootFotos();}catch(e){}
- await paintLugPhotosOnce();                  /* 2ª: tras bootFotos */
- /* reintentos: por si FOTOURLS se puebla poco a poco o tarda en tu red */
- let tries=0;
- const iv=setInterval(async()=>{
-  tries++;
-  const pending=await paintLugPhotosOnce();
-  if(pending===0||tries>=10){clearInterval(iv);}   /* hasta 10 intentos (~5 s) o cuando ya no falte ninguna */
- },500);}
+  const hasWiki=(typeof WIKI!=='undefined')&&WIKI[id];
+  const hasCustom=(PC.imgs||{})[id];
+  if(!hasWiki&&!hasCustom)return;               /* nada que cargar: se queda el kanji */
+  ki.dataset.fotoTried='1';
+  const kanji=ki.textContent;                   /* guardamos el kanji por si la foto falla */
+  const img=document.createElement('img');img.alt='';
+  img.onerror=()=>{img.remove();ki.textContent=kanji;};
+  ki.textContent='';ki.appendChild(img);
+  window.__loadThumb(img,id).then(()=>{if(!ki.querySelector('img'))ki.textContent=kanji;});
+ });}
 const _rlPhoto=renderLug;
 window.renderLug=function(){_rlPhoto();try{decorateLugPhotos();}catch(e){}};
 
