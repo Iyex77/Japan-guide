@@ -4099,20 +4099,6 @@ const _odMeal=openDay;openDay=function(pos){_odMeal(pos);renderMealSlots(pos);};
 function fk(kind,city,name){const sl=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,30);return 'f_'+kind+'_'+sl(city)+'_'+sl(name);}
 const mapsQ=r=>encodeURIComponent(r.n+' '+(r.__city||'')+' Japan');
 
-/* si bootFotos() falló alguna vez (red, CORS…), los fallos quedan cacheados como '' para siempre y no se
-   reintentan — lo reseteamos UNA vez para darle a todo el listado una segunda oportunidad real */
-(async()=>{try{
- const done=await stGet('j26_fotoretry_v1');if(done)return;
- const cache=await stGet(FKEY)||{};
- let changed=false;
- Object.keys(cache).forEach(k=>{if(cache[k]===''){delete cache[k];changed=true;}});
- if(changed)await stSet(FKEY,cache);
- await stSet('j26_fotoretry_v1',true);
- BOOTP=null;FOTOURLS=null;
- await bootFotos();
- if(document.getElementById('lugares'))renderLug();
-}catch(e){}})();
-
 /* 1) foto en las filas de Restaurantes / Tiendas / Cerca de aquí (todas pasan por rrow) */
 window.rrow=function(r,shop){const q=mapsQ(r);const nm=esc(r.n).replace(/'/g,"\\'");
  const photo=(PC.imgs||{})[fk(shop?'s':'r',r.__city,r.n)];
@@ -4139,25 +4125,32 @@ function putLugPhoto(ki,id,url){
  const img=document.createElement('img');img.alt='';img.referrerPolicy='no-referrer';
  img.onerror=()=>{img.remove();ki.textContent=(P[id]&&P[id].k)||'';};
  img.src=url;ki.textContent='';ki.appendChild(img);}
-async function decorateLugPhotos(){
- const host=document.getElementById('lugares');if(!host)return;
- /* 1º: fotos personalizadas (instantáneas, no necesitan red) */
+async function paintLugPhotosOnce(){
+ const host=document.getElementById('lugares');if(!host)return 0;
+ let pending=0;
  host.querySelectorAll('.pl').forEach(el=>{
   const ki=el.querySelector('.ki');if(!ki||ki.querySelector('img'))return;
   const id=idFromRow(el);if(!id||!P[id])return;
-  const custom=(PC.imgs||{})[id];if(custom)putLugPhoto(ki,id,custom);});
- /* 2º: fotos de Wikipedia — MISMO camino que el itinerario: esperar a bootFotos() SIEMPRE */
- try{
-  await bootFotos();
-  /* re-buscar los .pl ahora, por si el DOM se redibujó mientras esperábamos */
-  document.querySelectorAll('#lugares .pl').forEach(el=>{
-   const ki=el.querySelector('.ki');if(!ki||ki.querySelector('img'))return;
-   const id=idFromRow(el);if(!id||!P[id])return;
-   if((PC.imgs||{})[id])return;                 /* ya la puso la personalizada */
-   const t=(typeof WIKI!=='undefined')?WIKI[id]:null;
-   const url=t&&FOTOURLS?FOTOURLS[t]:'';
-   if(url)putLugPhoto(ki,id,url);});
- }catch(e){}}
+  const custom=(PC.imgs||{})[id];
+  const t=(typeof WIKI!=='undefined')?WIKI[id]:null;
+  const cached=t&&FOTOURLS?FOTOURLS[t]:'';
+  const url=custom||cached;
+  if(url)putLugPhoto(ki,id,url);
+  else if(t)pending++;   /* tiene página en Wikipedia pero aún no hay URL: reintentar luego */
+ });
+ return pending;}
+async function decorateLugPhotos(){
+ if(!document.getElementById('lugares'))return;
+ await paintLugPhotosOnce();                 /* 1ª pasada: personalizadas + lo ya cacheado */
+ try{await bootFotos();}catch(e){}
+ await paintLugPhotosOnce();                  /* 2ª: tras bootFotos */
+ /* reintentos: por si FOTOURLS se puebla poco a poco o tarda en tu red */
+ let tries=0;
+ const iv=setInterval(async()=>{
+  tries++;
+  const pending=await paintLugPhotosOnce();
+  if(pending===0||tries>=10){clearInterval(iv);}   /* hasta 10 intentos (~5 s) o cuando ya no falte ninguna */
+ },500);}
 const _rlPhoto=renderLug;
 window.renderLug=function(){_rlPhoto();try{decorateLugPhotos();}catch(e){}};
 
