@@ -1902,14 +1902,11 @@ DAYS[19]={f:"2 oct · viernes",city:"Tokio",t:"Última mañana y vuelo",tags:["S
 renderDias();if(window.renderDiario)renderDiario();renderLug();
 </script>
 <script>
-/* ══ v14: semáforo del día 1 + selector de rutas en el 1 oct ══ */
+/* ══ v14: selector de rutas en el 1 oct (el semáforo del día 1 se renderiza aparte, ver v33) ══ */
 DAYS[0].a=[
- ["12:40","Llegada a Kansai + migración","Al recoger maletas: evaluad el semáforo de energía"],
+ ["12:40","Llegada a Kansai + migración","Al recoger maletas: evaluad el semáforo de energía de abajo"],
  ["14:15","Nankai Rapi:t a Namba","El tren azul; billete digital ¥1.410 opcional"],
- ["15:30","Check-in Via Inn Prime",null],
- ["🟢 VERDE","Con energía: Dotonbori completo + cena + tiendas","Glico, Hozen-ji, cena y Daiso / BOOKOFF / ABC-MART","hozenji"],
- ["🟡 ÁMBAR","Media: cena en Namba + una hora de neón","Paseo corto por Dotonbori y a la cama; las tiendas esperan al día 2"],
- ["🔴 ROJO","Reserva: konbini + baño del hotel + dormir","Perder la primera noche es ganar el día siguiente — sin culpa"]];
+ ["15:30","Check-in Via Inn Prime",null]];
 DAYS[18].t="1 oct: elige ruta — Bahía, Nikkō o DisneySea";
 DAYS[18].tags=["Selector de ruta arriba","Toyosu cierra jueves"];
 const DAYVARS={18:{sel:[["A","🌉 A · Bahía"],["B1","🐒 B · Nikkō"],["B2","🎢 B · DisneySea"]],
@@ -2631,9 +2628,7 @@ try{BOOTP=null;bootFotos();}catch(e){}
 (function(){
 /* inserciones: [díaOriginal, insertar_en_posición, fila] — solo añaden, nunca reordenan */
 const INS=[
-[0,99,['\ud83c\udf5c Cena seg\u00fan sem\u00e1foro','\u2b50 ICHIRAN Dotonbori','Otras: Kura Flagship \u00b7 Takoyaki Kukuru \u00b7 551 Horai']],
 [1,99,['\ud83c\udf5c Comer/cenar','\u2b50 Chibo Okonomiyaki (tu nota)','Otras: Mizuno (Michelin, cola) \u00b7 Fukutaro \u00b7 Wanaka']],
-[2,99,['\ud83c\udf5c En Namba','\u2b50 551 Horai Honten (baos)','Merienda: Rikuro \u00b7 Pablo \u00b7 Cena: Rikimaru \u00b7 Chiyomatsu']],
 [3,99,['\ud83c\udf5c En el parque','USJ: comida dentro','A la vuelta: Dekasan \u00b7 Hokkyokusei (omurice)']],
 [5,99,['\ud83c\udf5c Comer','\u2b50 Sushitetsu (ver c\u00f3mo lo preparan)','Otras: Chao Chao Gyoza \u00b7 Sen-no-Kaze \u00b7 Cena Gion: Tanto \u00b7 Mouriya']],
 [6,99,['\ud83c\udf5c Cena centro','\u2b50 Kichi Kichi (si logr\u00e1is reserva)','Otras: Menbaka Fire Ramen \u00b7 Katsukura Sanjo']],
@@ -3229,11 +3224,6 @@ Object.keys(RV).forEach(c=>mrg(REST[c],RV[c]));
 Object.keys(SV).forEach(c=>mrg(SHOP[c],SV[c]));
 /* ── correcciones/avisos en el timeline (solo añaden o anotan; no reordenan) ── */
 try{
- (DAYS[0].a||[]).forEach(r=>{if((r[1]||'').includes('ICHIRAN')){
-  r[2]='\u26a0\ufe0f El edificio principal CERR\u00d3 \u2713: id al Anexo/Sur (1-4-16 Dotonbori, mostrador 24 h) \u00b7 Otras: Kura Flagship \u00b7 Kukuru \u00b7 551 Horai';}});
- (DAYS[2].a||[]).forEach(r=>{if((r[1]||'').includes('551 Horai')){
-  r[1]='\ud83c\udf5c En Namba \u2014 \u26a0\ufe0f 551 Honten HOY CERRADO (3er martes) \u2713';
-  r[2]='Plan B: Rikuro (tarta \u00a51.065) \u00b7 Pablo \u00b7 cena Rikimaru \u00b7 Chiyomatsu \u00b7 Harukoma tambi\u00e9n cierra martes';}});
  (DAYS[14].a||[]).forEach(r=>{if((r[1]||'').toLowerCase().includes('mercadillo de oi')||(r[3]==='oi')){
   r[2]='\u2705 CONFIRMADO \u2713: hay mercadillo este domingo 27 (9:00\u201314:30, se cancela con lluvia) \u2014 sigue siendo solo una sugerencia: decide t\u00fa, el plan no cambia solo';}});
  if(DAYS[17]&&DAYS[17].a)DAYS[17].a.push(['Aviso mi\u00e9rcoles','TOJIRO Kappabashi CERRADO hoy \u2713 \u00b7 en Nakano Broadway varias tiendas tambi\u00e9n cierran mi\u00e9rcoles','Si ten\u00edais compras all\u00ed, movedlas a otro d\u00eda \u00b7 Tsukiji: comprobad su calendario visual la v\u00edspera']);
@@ -3563,6 +3553,605 @@ function buildRoomUI(){
  }
  host.appendChild(box);}
 (function initIfSaved(){const tryBuild=()=>{if(document.getElementById('tab-mv'))buildRoomUI();else setTimeout(tryBuild,400)};tryBuild();})();
+})();
+</script>
+
+<script>
+/* ══ v33a: fichas para el semáforo del día 1 — Umeda Sky Building + Takimikoji ══ */
+(function(){
+const A=window.__addP,C=window.__cats;
+A('umeda','Umeda Sky Building',{n:'Umeda Sky Building',k:'梅',city:'Osaka',cat:C.cVis,c1:C.colVis,
+ dia:'día 13 · 13 sep (si elegís VERDE)',
+ d:'Dos torres de 173 m unidas en lo alto por el Kuchu Teien, el "Jardín Flotante": un mirador circular al aire libre con vistas de 360° sobre Osaka, al que se sube por una escalera mecánica acristalada suspendida entre las dos torres.',
+ s:'El edificio se recubre de unos 17.000 paneles de cristal semiespejado que lo funden con el cielo; la escalera transparente entre las plantas 35 y 39 parece flotar en el vacío, sin nada visible debajo salvo la calle.',
+ t:['La escalera acristalada entre las plantas 35 y 39 es la foto icónica: subid con luz de atardecer.','Bajo el edificio está Takimikoji, el barrio retro de esta misma opción — bajad después del mirador.','El "Fence of Vows" (candado con forma de corazón, ~¥3.300 combinado con la entrada) va aparte y pide reserva previa [No verificado si sigue activo en 2026].'],
+ hor:'9:30–22:30 (última entrada 22:00)',pre:'¥2.000 adultos · ¥500 niños 4–12 años'});
+A('takimikoji','Takimi-koji',{n:'Takimikoji',k:'滝',city:'Osaka',cat:C.cMer,c1:C.colMer,
+ dia:'día 13 · 13 sep (si elegís VERDE)',
+ d:'El sótano del Umeda Sky Building recrea un barrio japonés de comienzos del s. XX: calles empedradas, farolillos y unos 20 restaurantes de cocina osakota (okonomiyaki, kushikatsu, katsudon, shabu-shabu, sushi).',
+ s:'Entre los rótulos de esmalte antiguo y el furgón de reparto Daihatsu Midget original hay una sucursal del histórico Hozen-ji Yokocho de Namba: el mismo kushikatsu que veréis el día 14, aquí escondido bajo un rascacielos futurista.',
+ t:['Bajad justo después del mirador: de la escalera de cristal al Japón de los años 20 en un solo ascensor.','Cada restaurante tiene su propio horario; la mayoría sirve de mediodía a ~22:00 [orientativo, confirmar en sitio].'],
+ hor:'Callejón siempre accesible · cada restaurante con su horario [horario general no verificado]',pre:'Entrada libre · comida según restaurante'});
+/* Hozen-ji, Dotonbori y Namba van cada uno con su propia ficha — antes iban mezclados en un solo "hozenji" */
+A('hozenji','Hōzen-ji',{n:'Hozen-ji',k:'法',city:'Osaka',cat:C.cBar,c1:C.colBar,dia:'día 14 · 14 sep',
+ d:'Callejón de piedra escondido a un minuto de Dotonbori, con el santuario del Fudō Myōō cubierto de musgo.',
+ s:'La estatua está cubierta de musgo porque los fieles llevan más de un siglo lanzándole agua al pedir un deseo. Tú también puedes.',
+ t:['Compagina bien con Dotonbori: está a un minuto andando, es la parada tranquila después del neón.','De noche, con los farolillos encendidos, es el contraste perfecto con el bullicio de fuera — encaja muy bien como cierre del día.'],
+ hor:'Recinto visitable 24 h · oficina/goshuin ~10:00–18:00',pre:'Gratis',gos:'¥300 en el templete'});
+A('dotonbori','Dōtonbori',{n:'Dotonbori',k:'道',city:'Osaka',cat:C.cBar,c1:C.colBar,dia:'día 13 · 13 sep (si elegís VERDE o AMARILLO) · también día 14',
+ d:'El canal y la avenida de neón más fotografiada de Osaka: el cartel de Glico, el cangrejo gigante de Kani Dōraku y los puentes sobre el agua, entre Namba y Shinsaibashi.',
+ s:'El canal se excavó entre 1612 y 1615 por orden del administrador Nariyasu Dōton, que le da nombre. El cartel de Glico corre desde 1935 y va ya por su sexta versión (2014): unas 140.000 luces LED que se encienden ~30 min después de la puesta de sol.',
+ t:['La foto clásica es desde el puente Ebisubashi, justo bajo el cartel de Glico.','De noche es cuando cobra vida de verdad: el neón se refleja en el canal.'],
+ hor:'Siempre accesible · el cartel de Glico se enciende ~30 min tras la puesta de sol',pre:'Gratis'});
+A('namba','Namba, Osaka',{n:'Namba',k:'難',city:'Osaka',cat:C.cBar,c1:C.colBar,dia:'día 13 · 13 sep (si elegís VERDE) · también día 14',
+ d:'El gran centro de ocio y compras del sur de Osaka, alrededor de la estación Nankai Namba: la arcada cubierta de Shinsaibashi-suji, la calle de menaje Doguyasuji y el propio Dotonbori a un paso.',
+ s:'Shinsaibashi-suji es la galería comercial cubierta que arranca justo al norte de Dotonbori: viene funcionando como eje comercial de Osaka desde el periodo Edo.',
+ t:['Es vuestra base de vuelta la noche del día 1: cena fácil, un paseo corto o directos al hotel según el semáforo.','De noche está iluminada y llena de vida hasta tarde; de día es más tranquila para pasear.'],
+ hor:'Siempre accesible',pre:'Gratis (las tiendas, aparte)'});
+A('tennojipark','',{n:'Parque Tennoji',k:'天',city:'Osaka',cat:C.cNat,c1:C.colNat,dia:'día 14 · 14 sep',
+ d:'Parque público entre Shitennō-ji y Shinsekai: césped, sombra y bancos. Es la parada técnica del itinerario, no una visita en sí — bebida, sentaros un rato y recolocar el día antes de Shinsekai.',
+ s:'Dentro del parque está el jardín japonés Keitakuen y linda con el zoo de Tennoji, por si otro día os sobra tiempo por la zona.',
+ t:['No hace falta alargarse: 30-45 min de descanso son suficientes.','Hay máquinas expendedoras y sombra de sobra para aguantar el calor de septiembre.'],
+ hor:'Parque siempre abierto (Keitakuen y el zoo tienen horario y entrada aparte)',pre:'Entrada al parque gratis'});
+A('tomboricruise','',{n:'Tombori River Cruise',k:'船',city:'Osaka',cat:C.cVis,c1:C.colVis,dia:'día 14 · 14 sep (opcional)',
+ d:'Paseo en barco por el canal de Dotonbori, bajo los puentes y el neón — unos 20 minutos, opción para después de cenar.',
+ s:'El recorrido pasa justo bajo el cartel de Glico y el puente Ebisubashi, la perspectiva desde el agua que no se ve paseando por la orilla.',
+ t:['No es a cualquier hora: funciona aprox. 11:00–21:00, cada 30 min.','Si llegáis tarde o cansados, no pasa nada: paseo a pie por el canal en su lugar, sin sensación de haberos perdido algo.'],
+ hor:'Aprox. 11:00–21:00, cada 30 min · dura ~20 min',pre:'Opcional — se paga en la taquilla del embarcadero'});
+try{BOOTP=null;bootFotos();}catch(e){}
+})();
+</script>
+<style>
+.semaforo{margin-top:4px}
+.semTitle{font-family:'Baloo 2',sans-serif;font-size:16px;margin-bottom:4px}
+.semSub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.semPanel{border-radius:var(--r);box-shadow:var(--sh2);padding:16px 17px;margin-bottom:13px}
+.semPanel.semG{background:var(--verde)}
+.semPanel.semA{background:var(--amar)}
+.semPanel.semR{background:var(--rosa)}
+.semHead{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.semHead .semDot{font-size:18px;line-height:1}
+.semHead b{font-family:'Baloo 2',sans-serif;font-size:15.5px}
+.semG .semHead b{color:var(--verdet)}
+.semA .semHead b{color:var(--amarb)}
+.semR .semHead b{color:var(--rosat)}
+.semPanel p{font-size:13.5px;line-height:1.5;margin-bottom:7px}
+.semPanel p:last-of-type{margin-bottom:0}
+.semsite{background:var(--card);border-radius:14px;padding:11px 13px;margin-top:11px;cursor:pointer}
+.semsite .ssTop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.semsite .ssTop b{font-family:'Baloo 2',sans-serif;font-size:14.5px}
+.semsite .ssTop span{color:var(--pri);font-size:12.5px;font-weight:700;flex-shrink:0}
+.semsite .ssDesc{font-size:12.5px;color:var(--ink);margin-top:4px;opacity:.85;line-height:1.4}
+.semsite .ssMeta{font-size:11px;color:var(--muted);margin-top:6px;font-weight:700}
+.semRegla{background:var(--soft);border-radius:var(--r);padding:15px 17px}
+.semRegla b{font-family:'Baloo 2',sans-serif;font-size:14.5px;color:var(--pri2);display:block;margin-bottom:6px}
+.semRegla p{font-size:13.5px;color:var(--ink);line-height:1.5}
+</style>
+<script>
+/* ══ v33b: render del semáforo de la tarde del día 1 (bloques de color con las fichas dentro) ══ */
+(function(){
+function siteMini(id){
+ const p=P[id];if(!p)return '';
+ return '<div class="semsite" data-id="'+id+'" onclick="openPlace(\''+id+'\')"><div class="ssTop"><b>'+esc(p.n)+'</b><span>Ver ficha ›</span></div>'
+  +'<div class="ssDesc">'+esc(p.d)+'</div><div class="ssMeta">'+esc(p.hor)+' · '+esc(p.pre)+'</div></div>';
+}
+function semHTML(){
+ return '<div class="semaforo">'
+ +'<div class="semTitle">🚦 Elegid UNA de las 3 — no las tres</div>'
+ +'<p class="semSub">Solo para la tarde del día 1. Después de ducha y check-in: ¿cómo estáis realmente?</p>'
+ +'<div class="semPanel semG"><div class="semHead"><span class="semDot">🟢</span><b>VERDE · llegamos sorprendentemente bien</b></div>'
+ +'<p><b>Plan:</b> Umeda Sky Building al atardecer/noche.</p>'
+ +'<p><b>Ruta:</b> hotel → Umeda Sky Building → Takimikoji si apetece → vuelta a Namba/Dotonbori para cena fácil o paseo corto.</p>'
+ +'<p><b>Horario orientativo:</b> salir del hotel 16:45–17:15 · mirador 17:45–19:00 · vuelta a Namba 19:30–20:00 · cena sencilla y hotel sobre 22:00.</p>'
+ +siteMini('umeda')+siteMini('takimikoji')+siteMini('namba')+siteMini('dotonbori')
+ +'</div>'
+ +'<div class="semPanel semA"><div class="semHead"><span class="semDot">🟡</span><b>AMARILLO · cansancio normal</b></div>'
+ +'<p><b>Plan:</b> Dotonbori cerca del hotel.</p>'
+ +'<p><b>Ruta:</b> hotel → canal de Dotonbori → cartel de Glico → Hozen-ji si queda a mano → cena fácil: Ichiran (⚠️ el edificio principal cerró, id al Anexo/Sur en 1-4-16 Dotonbori, mostrador 24 h), Kura Sushi, takoyaki o algo similar.</p>'
+ +'<p><b>Horario orientativo:</b> salir 17:00–17:30 · paseo y cena hasta 20:30–21:00 · hotel sobre 21:30–22:00.</p>'
+ +siteMini('dotonbori')+siteMini('hozenji')
+ +'</div>'
+ +'<div class="semPanel semR"><div class="semHead"><span class="semDot">🔴</span><b>ROJO · llegamos reventados</b></div>'
+ +'<p><b>Plan:</b> no hacer turismo real.</p>'
+ +'<p><b>Ruta:</b> hotel → konbini / cena mínima cerca → ducha → preparar mochila del día 14 → dormir.</p>'
+ +'<p><b>Horario orientativo:</b> cena muy corta 18:00–19:00 y hotel sin culpa. No se ha perdido nada: Osaka empieza de verdad mañana.</p>'
+ +'</div>'
+ +'<div class="semRegla"><b>Regla de decisión</b><p>Si dudáis entre dos colores, elegid el más conservador. El primer día no se gana por meter más cosas, se gana por llegar vivos al día 14. Umeda solo entra si estáis claramente en verde; Dotonbori es el plan normal; descanso es el plan inteligente si el vuelo os deja tocados.</p></div>'
+ +'</div>';
+}
+const _odSem=openDay;
+openDay=function(pos){_odSem(pos);
+ const o=(ORD||[])[pos]??pos;if(o!==0)return;
+ const host=document.getElementById('sheetInner');if(!host||host.querySelector('.semaforo'))return;
+ const blk=host.querySelector('.blk');if(!blk)return;
+ blk.insertAdjacentHTML('afterend',semHTML());};
+})();
+</script>
+
+<style>
+.acts li.hasThumb{display:flex;gap:12px;align-items:flex-start}
+.acts li.hasThumb .actBody{flex:1;min-width:0}
+.actThumb{width:56px;height:56px;border-radius:14px;object-fit:cover;flex-shrink:0;background:var(--soft)}
+.semsite.hasThumb{display:flex;gap:12px;align-items:flex-start}
+.semsite.hasThumb .ssBody{flex:1;min-width:0}
+.semThumb{width:56px;height:56px;border-radius:14px;object-fit:cover;flex-shrink:0;background:var(--soft)}
+.actThumb,.semThumb{cursor:zoom-in}
+.jplightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
+.jplightbox.on{display:flex}
+.jplightbox img{max-width:100%;max-height:100%;border-radius:12px;object-fit:contain}
+.jplightbox .lbx{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:999px;width:38px;height:38px;font-size:20px;cursor:pointer}
+</style>
+<script>
+/* ══ v34: miniaturas de foto en el itinerario de TODOS los días + en las tarjetas del semáforo ══ */
+(function(){
+function ensureLightbox(){
+ let lb=document.getElementById('jplightbox');
+ if(lb)return lb;
+ lb=document.createElement('div');lb.id='jplightbox';lb.className='jplightbox';
+ lb.innerHTML='<button class="lbx">✕</button><img alt="">';
+ lb.onclick=()=>lb.classList.remove('on');
+ document.body.appendChild(lb);
+ return lb;}
+function openLightbox(src){const lb=ensureLightbox();lb.querySelector('img').src=src;lb.classList.add('on');}
+async function loadThumb(img,id){
+ const custom=PC&&PC.imgs&&PC.imgs[id];
+ img.onclick=e=>{e.stopPropagation();openLightbox(img.src)};
+ if(custom){img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();img.src=custom;return;}
+ try{await bootFotos();
+  const t=WIKI[id],url=t&&FOTOURLS?FOTOURLS[t]:'';
+  if(url){img.referrerPolicy='no-referrer';img.onerror=()=>img.remove();img.src=url;}
+  else img.remove();
+ }catch(e){img.remove();}
+}
+function wrapWithThumb(el,bodyClass,thumbClass,id){
+ if(el.classList.contains('hasThumb'))return;
+ const body=document.createElement('div');body.className=bodyClass;
+ while(el.firstChild)body.appendChild(el.firstChild);
+ const img=document.createElement('img');img.className=thumbClass;img.alt='';
+ el.classList.add('hasThumb');
+ el.appendChild(img);el.appendChild(body);
+ loadThumb(img,id);
+}
+function hasPhoto(id){return !!(WIKI[id]||(PC&&PC.imgs&&PC.imgs[id]))}
+const _odThumb=openDay;
+openDay=function(pos){_odThumb(pos);
+ const host=document.getElementById('sheetInner');if(!host)return;
+ let acts;try{acts=dayActs(pos)}catch(e){acts=null}
+ if(acts)host.querySelectorAll('.acts li').forEach((li,i)=>{
+  const id=acts[i]&&acts[i][3];if(!id||!P[id]||!hasPhoto(id))return;
+  wrapWithThumb(li,'actBody','actThumb',id);});
+ host.querySelectorAll('.semsite[data-id]').forEach(el=>{
+  const id=el.dataset.id;if(!id||!P[id]||!hasPhoto(id))return;
+  wrapWithThumb(el,'ssBody','semThumb',id);});
+};
+})();
+</script>
+
+<style>
+nav{z-index:90;width:min(94vw,430px);justify-content:space-around;padding:8px 6px}
+nav button{padding:7px 8px}
+.dayNavFixed{position:fixed;top:0;left:0;right:0;z-index:75;background:var(--bg);margin:0;padding:12px 16px 10px;display:flex;justify-content:center;gap:9px}
+.dayNavFixed .btn{flex-shrink:0;padding:9px 16px}
+.backFixed{position:fixed;top:0;left:0;right:0;z-index:75;background:var(--bg);margin:0;padding:12px 16px 10px;display:flex}
+.backFixed .back{margin-bottom:0}
+</style>
+<script>
+/* ══ v35: nav inferior ancho y siempre visible + día anterior/siguiente fijos arriba (sin Atrás en los días) + Atrás fijo arriba en fichas/vuelos/seguro/hoteles/etc. ══ */
+(function(){
+function clearPad(){const host=document.getElementById('sheetInner');if(host)host.style.paddingTop=''}
+function stripNav(){const host=document.getElementById('sheetInner');if(!host)return;
+ const backs=host.querySelectorAll('.back');
+ backs.forEach((el,i)=>{if(i>0)el.remove();});
+ host.querySelectorAll('.homebtn').forEach(el=>el.remove());}
+function pinBack(){
+ const host=document.getElementById('sheetInner');if(!host)return;
+ clearPad();stripNav();
+ const back=host.querySelector('.back');if(!back)return;
+ if(back.parentElement.classList.contains('backFixed'))return;
+ const bar=document.createElement('div');bar.className='backFixed';
+ back.parentNode.insertBefore(bar,back);
+ bar.appendChild(back);
+ host.style.paddingTop=(bar.offsetHeight+10)+'px';}
+function pinDayNav(pos){
+ const host=document.getElementById('sheetInner');if(!host)return;
+ clearPad();stripNav();
+ host.querySelectorAll('.back').forEach(el=>el.remove());
+ if(typeof pos!=='number')return;
+ const bts=host.querySelector('.btnrow');if(!bts||!bts.children.length)return;
+ const bar=document.createElement('div');bar.className='dayNavFixed';
+ host.insertBefore(bar,host.firstChild);
+ while(bts.firstChild)bar.appendChild(bts.firstChild);
+ bts.remove();
+ host.style.paddingTop=(bar.offsetHeight+10)+'px';}
+const _odPin=openDay;openDay=function(pos){_odPin(pos);pinDayNav(pos);};
+const _opPin=openPlace;openPlace=function(id){_opPin(id);pinBack();};
+const _ovPin=openVuelos;openVuelos=function(){_ovPin();pinBack();};
+const _osPin=openSeguro;openSeguro=function(){_osPin();pinBack();};
+const _ohPin=openHoteles;openHoteles=function(){_ohPin();pinBack();};
+if(window.openStats){const _otPin=openStats;openStats=function(){_otPin();pinBack();};}
+if(window.openPend){const _opePin=openPend;openPend=function(){_opePin();pinBack();};}
+if(window.openFoodByName){const _ofPin=openFoodByName;openFoodByName=function(k,c,n){_ofPin(k,c,n);pinBack();};}
+/* Inicio/Guía/Frases/Mi viaje/Ayuda del nav de abajo: que siempre reseteen el historial y vayan a su sitio por defecto, nunca como "atrás" */
+if(window.go){const _goFinal=go;go=function(t){if(window.homeClose)homeClose();_goFinal(t);};}
+})();
+</script>
+
+<script>
+/* ══ v36: día 14 — añade Parque Tennoji (faltaba), desglosa el bloque de las 19:00 en 3 pasos, foto de reserva para Namba Yasaka ══ */
+(function(){
+try{
+ const d1=DAYS[1].a;
+ for(let i=0;i<d1.length;i++){if(d1[i][3]==='isshinji'){
+  d1.splice(i+1,0,['12:45','Parque Tennoji',null,'tennojipark']);break;}}
+ for(let i=0;i<d1.length;i++){if((d1[i][1]||'').includes('Cena Dotonbori')){
+  d1.splice(i,1,
+   ['19:00','Cena Namba / Dotonbori','Ramen, okonomiyaki, takoyaki o sushi de cadena rápida','dotonbori'],
+   ['20:30','Opción Tombori River Cruise','Post-cena, no obligatorio; si vais justos, paseo por el canal','tomboricruise'],
+   ['21:00','Hozen-ji / Glico / vuelta','Encaja bien de noche; si no hay ganas, vuelta directa al hotel','hozenji']);
+  break;}}
+}catch(e){}
+/* Namba Yasaka Shrine no tiene artículo en la Wikipedia en inglés (solo Simple English/alemán/francés/japonés),
+   así que bootFotos() nunca le encuentra miniatura. Le doy una foto de Wikimedia Commons como valor por defecto,
+   sin guardarla en el almacenamiento del usuario — si algún día le ponéis una propia con el botón 🖼 Foto, esa gana. */
+if(typeof pcApply==='function'){
+ const _paDef=pcApply;
+ pcApply=function(){
+  PC.imgs=PC.imgs||{};
+  if(!PC.imgs['nambayasaka'])PC.imgs['nambayasaka']='https://commons.wikimedia.org/wiki/Special:FilePath/Nanba_yasaka_shrine_view_of_demon_mouth_from_outside_complex.jpg?width=400';
+  _paDef();};}
+})();
+</script>
+
+<style>
+.actModal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:210;display:none;align-items:flex-end;justify-content:center}
+.actModal.on{display:flex}
+.actModal .card{background:var(--card);border-radius:20px 20px 0 0;padding:18px 16px 22px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;margin:0}
+.actModal h3{font-family:'Baloo 2',sans-serif;margin-bottom:12px}
+.gform textarea{width:100%;background:var(--bg);border:none;border-radius:12px;padding:11px 13px;font-family:'Quicksand',sans-serif;font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:9px;resize:vertical;min-height:56px}
+.ficToggle{background:var(--soft);border:none;border-radius:12px;padding:10px 13px;width:100%;text-align:left;font-family:'Quicksand',sans-serif;font-weight:700;font-size:13.5px;color:var(--ink);margin:2px 0 10px;cursor:pointer}
+.ficFields{display:none}
+.ficFields.on{display:block}
+.prioPick{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.prioPick .dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid var(--muted);opacity:.5}
+.prioPick .dot.on{opacity:1;border-color:var(--ink)}
+.prioPick .dot.r{background:#e24b4a}.prioPick .dot.y{background:#efb327}.prioPick .dot.g{background:#7fb069}
+.actModal .rowbtns{display:flex;gap:9px;margin-top:6px}
+.actModal .rowbtns .btn{flex:1}
+</style>
+<script>
+/* ══ v37: formulario real (no prompts en cadena) para añadir/editar actividades del día, con ficha del lugar opcional y prioridad ══ */
+(function(){
+function slugId(n){return 'c_'+n.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,20)+Math.floor(Math.random()*99);}
+function actModalEl(){
+ let m=document.getElementById('actModal');
+ if(!m){m=document.createElement('div');m.id='actModal';m.className='actModal';
+  m.onclick=e=>{if(e.target===m)m.classList.remove('on');};
+  document.body.appendChild(m);}
+ return m;}
+async function openActForm(pos,ai){
+ const arr=await actsOf(pos);
+ const editing=(typeof ai==='number');
+ const cur=editing?arr[ai]:['','','',null];
+ const curId=cur[3]||null;
+ const curPlace=curId?P[curId]:null;
+ const dayCity=dayData(pos).city.split(' ')[0].replace('→','');
+ const m=actModalEl();
+ m.innerHTML='<div class="card">'
+ +'<h3>'+(editing?'✏️ Editar actividad':'➕ Añadir actividad')+'</h3>'
+ +'<div class="gform">'
+ +'<div class="dos"><input id="af_h" placeholder="Hora (ej: 16:30)" style="flex:1">'
+ +'<input id="af_t" placeholder="Actividad" style="flex:2"></div>'
+ +'<textarea id="af_n" placeholder="Nota (opcional)"></textarea>'
+ +'<button type="button" class="ficToggle" id="af_ficToggle">📍 '+(curPlace?'Editar la ficha de este lugar':'Añadir ficha del lugar (opcional)')+'</button>'
+ +'<div class="ficFields'+(curPlace?' on':'')+'" id="af_ficFields">'
+ +'<div class="dos"><select id="af_city"></select><select id="af_cat"></select></div>'
+ +'<input id="af_d" placeholder="Descripción corta">'
+ +'<input id="af_hor" placeholder="Horario del sitio">'
+ +'<input id="af_pre" placeholder="Precio">'
+ +'<input id="af_img" placeholder="URL de foto (opcional)">'
+ +'<div class="hint" style="margin:2px 0 6px">Prioridad (como en el resto de la guía):</div>'
+ +'<div class="prioPick" id="af_prioPick"></div>'
+ +'</div>'
+ +'<div class="rowbtns"><button type="button" class="btn g" id="af_cancel">Cancelar</button><button type="button" class="btn" id="af_save">Guardar</button></div>'
+ +'</div></div>';
+ /* rellenar valores vía JS (no en el HTML) para no romper nada si el texto trae comillas */
+ m.querySelector('#af_h').value=cur[0]||'';
+ m.querySelector('#af_t').value=cur[1]||'';
+ m.querySelector('#af_n').value=cur[2]||'';
+ m.querySelector('#af_d').value=curPlace?curPlace.d||'':'';
+ m.querySelector('#af_hor').value=curPlace?curPlace.hor||'':'';
+ m.querySelector('#af_pre').value=curPlace?curPlace.pre||'':'';
+ m.querySelector('#af_img').value=(curId&&PC.imgs&&PC.imgs[curId])||'';
+ const citySel=m.querySelector('#af_city'),catSel=m.querySelector('#af_cat');
+ CITY_ORDER.forEach(x=>citySel.innerHTML+='<option>'+x+'</option>');
+ Object.keys(CAT_COL).forEach(x=>catSel.innerHTML+='<option>'+x+'</option>');
+ citySel.value=curPlace?curPlace.city:dayCity;
+ catSel.value=curPlace?curPlace.cat:'Barrios';
+ const curPrio=(function(){if(!curId||!window.prioDot)return '';
+  const mm=/class="prio\s*([a-z]*)"/.exec(prioDot(curId));return mm?mm[1]:'';})();
+ const pp=m.querySelector('#af_prioPick');pp.innerHTML='';
+ [['','Ninguna'],['r','Rojo'],['y','Amarillo'],['g','Verde']].forEach(([c,lb])=>{
+  const dd=document.createElement('span');dd.className='dot '+(c||'none')+(c===curPrio?' on':'');dd.dataset.c=c;dd.title=lb;
+  dd.onclick=()=>{pp.querySelectorAll('.dot').forEach(x=>x.classList.remove('on'));dd.classList.add('on');};
+  pp.appendChild(dd);});
+ m.querySelector('#af_ficToggle').onclick=()=>m.querySelector('#af_ficFields').classList.toggle('on');
+ m.querySelector('#af_cancel').onclick=()=>m.classList.remove('on');
+ m.querySelector('#af_save').onclick=async()=>{
+  const h=m.querySelector('#af_h').value.trim()||'—';
+  const t=m.querySelector('#af_t').value.trim();
+  if(!t){if(window.hap)hap(30);return;}
+  const n=m.querySelector('#af_n').value.trim()||null;
+  const ficOn=m.querySelector('#af_ficFields').classList.contains('on');
+  const d=m.querySelector('#af_d').value.trim();
+  const hor=m.querySelector('#af_hor').value.trim();
+  const pre=m.querySelector('#af_pre').value.trim();
+  const img=m.querySelector('#af_img').value.trim();
+  let id=curId;
+  if(ficOn&&(d||hor||pre||img)){
+   id=id||slugId(t);
+   PC.places=PC.places||{};
+   PC.places[id]={n:t,k:t.slice(0,1).toUpperCase(),city:citySel.value,cat:catSel.value,c1:CAT_COL[catSel.value]||'#3d5af1',
+    d:d||'Lugar añadido por ti.',
+    s:(curPlace&&curPlace.s)||'Añadido a mano a la guía — la mejor señal de que el viaje es vuestro.',
+    t:(curPlace&&curPlace.t)||['Añadido manualmente; edítalo desde aquí si cambia algo.'],
+    hor:hor||'—',pre:pre||'—',gos:(curPlace&&curPlace.gos)||null,
+    dia:'día '+(pos+1)+' · '+fpos(pos).split(' · ')[0]};
+   if(img){PC.imgs=PC.imgs||{};PC.imgs[id]=img;}
+   await pcSave();pcApply();renderLug();if(window._paintCustom)_paintCustom();}
+  const chosen=pp.querySelector('.dot.on');const cVal=chosen?chosen.dataset.c:'';
+  if(id&&window.cyclePrio){
+   const seq=['','g','y','r'];
+   const curHtml=window.prioDot?prioDot(id):'';
+   const mm=/class="prio\s*([a-z]*)"/.exec(curHtml);
+   const curVal=mm?mm[1]:'';
+   const steps=(seq.indexOf(cVal)-seq.indexOf(curVal)+4)%4;
+   if(steps>0){const tmp=document.createElement('span');tmp.dataset.pid=id;
+    for(let s=0;s<steps;s++)await cyclePrio(tmp);}}
+  if(editing)arr[ai]=[h,t,n,id];else arr.push([h,t,n,id]);
+  await stSet('j26_acts',ACTS);
+  m.classList.remove('on');
+  openDay(pos);};
+ m.classList.add('on');}
+window.actAdd=function(pos){openActForm(pos);};
+window.actEdit=function(pos,ai){openActForm(pos,ai);};
+})();
+</script>
+
+<script>
+/* ══ v38: fotos para restaurantes/tiendas + selector "Comer/Cenar" cercano por día (recomendados por zona + lista completa) ══ */
+(function(){
+function timeVal(s){const m=/^(\d{1,2}):(\d{2})/.exec(s||'');return m?(+m[1])*60+(+m[2]):9999;}
+function insertByTime(arr,entry){const tv=timeVal(entry[0]);let idx=arr.findIndex(a=>timeVal(a[0])>tv);if(idx<0)idx=arr.length;arr.splice(idx,0,entry);}
+try{
+ const A=window.__addP,C=window.__cats;
+ A('shinsaibashisuji','Shinsaibashi-suji',{n:'Shinsaibashisuji',k:'心',city:'Osaka',cat:C.cBar,c1:C.colBar,dia:'día 15 · 15 sep',
+  d:'La gran arcada comercial cubierta de Osaka, casi 600 metros de tiendas seguidas desde Dotonbori hacia el norte: Hands, Onitsuka Tiger, ABC-MART Grand Stage y muchas más.',
+  s:'Lleva siendo el eje comercial de la ciudad desde el periodo Edo — antes de las cadenas actuales, ya era la calle de tiendas de Osaka.',
+  t:['Cubierta: buen plan si llueve.','Enlaza directo con Dotonbori por el sur, así que combina bien con la cena.'],
+  hor:'Tiendas, en general 10:00–20:00 (cada una la suya)',pre:'Entrada libre'});
+ /* Día 3 (15 sep): era el único hueco de comida totalmente genérico, sin restaurante concreto ni reserva —
+    los demás días tienen sitios elegidos a mano (con notas de reserva, horario o cupos) y no los toco. */
+ const d3=DAYS[2].a;
+ for(let i=0;i<d3.length;i++){if((d3[i][1]||'').includes('Cena okonomiyaki')){d3.splice(i,1);break;}}
+ for(let i=0;i<d3.length;i++){if((d3[i][1]||'').includes('Shinsaibashisuji')){d3[i][3]='shinsaibashisuji';break;}}
+ insertByTime(d3,['13:00','Comer',null,'MEAL:comer']);
+ insertByTime(d3,['21:00','Cenar',null,'MEAL:cenar']);
+ /* día 2: la sugerencia suelta de Chibo Okonomiyaki ya es redundante (esa cena se desglosó aparte) */
+ const d2=DAYS[1].a;
+ for(let i=d2.length-1;i>=0;i--){if((d2[i][1]||'').includes('Chibo Okonomiyaki')){d2.splice(i,1);}}
+ /* resto de días con un sitio concreto apuntado a mano: lo dejo como recordatorio dentro del selector,
+    pero el selector empieza VACÍO — elegís vosotros, no se precarga solo */
+ const MEALCONV=[
+  {day:5,remove:['Sushitetsu'],comer:'Antes teníais apuntado: Sushitetsu — ver cómo lo preparan'},
+  {day:6,remove:['Kichi Kichi'],cenar:'Antes teníais apuntado: Kichi Kichi — reserva SOLO presencial el mismo día, cola en el local desde ~14:00'},
+  {day:7,remove:['GYUKATSU'],cenar:'Antes teníais apuntado: GYUKATSU Katsugyu Kawaramachi'},
+  {day:8,remove:['Nakau Hachijo'],comer:'Antes teníais apuntado: Nakau Hachijo — rápido y barato'},
+  {day:9,remove:['Cena especial']},
+  {day:10,remove:['Cena de ternera Hida','Heianraku'],cenar:'Antes teníais apuntado: cena de ternera Hida en Heianraku — reservar por web/correo; CIERRA MARTES (y según fuentes mié/jue: confirmad vuestro día) · Plan B: Suzuya, Maruaki'},
+  {day:12,remove:['Kotte Ushi','Ebihachi'],comer:'Antes teníais apuntado: Kotte Ushi — sin reserva, cola rápida, 10:00–17:00',cenar:'Antes teníais apuntado: Ebihachi — SOLO CENAS, imprescindible reservar'},
+  {day:13,remove:['Tonkatsu Marushichi'],cenar:'Antes teníais apuntado: Tonkatsu Marushichi Ginza'},
+  {day:14,remove:['puestos de Ameyoko'],comer:'Antes teníais apuntado: puestos de Ameyoko — comer ahí mismo'},
+  {day:16,remove:['Tonkatsu Maisen Aoyama','ICHIRAN Spain-zaka'],comer:'Antes teníais apuntado: Tonkatsu Maisen Aoyama',cenar:'Antes teníais apuntado: ICHIRAN Spain-zaka'},
+  {day:17,remove:['Tsujihan','Cena en Odaiba'],comer:'Antes teníais apuntado: Tsujihan (kaisendon) — cola 30 min–2 h, SOLO EFECTIVO; truco: ir a la apertura (11:00) o a la sucursal Ark Hills'}];
+ MEALCONV.forEach(cv=>{
+  const arr=DAYS[cv.day]&&DAYS[cv.day].a;if(!arr)return;
+  cv.remove.forEach(txt=>{for(let i=arr.length-1;i>=0;i--){if((arr[i][1]||'').includes(txt))arr.splice(i,1);}});
+  if('comer' in cv)insertByTime(arr,['13:00','Comer',null,'MEAL:comer',cv.comer||null]);
+  if('cenar' in cv)insertByTime(arr,['21:00','Cenar',null,'MEAL:cenar',cv.cenar||null]);
+ });
+ /* relleno: todos los días tienen que tener comer Y cenar, no solo el que ya tocamos —
+    excepto día 1 (lo cubre el semáforo) y día 4 (coméis dentro de USJ) */
+ for(let d=1;d<DAYS.length;d++){
+  if(d===3)continue;
+  const arr=DAYS[d].a;if(!arr)continue;
+  if(!arr.some(a=>a[3]==='MEAL:comer'))insertByTime(arr,['13:00','Comer',null,'MEAL:comer',null]);
+  if(!arr.some(a=>a[3]==='MEAL:cenar'))insertByTime(arr,['21:00','Cenar',null,'MEAL:cenar',null]);
+ }
+}catch(e){}
+function foodKey(kind,city,name){const sl=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,30);return 'f_'+kind+'_'+sl(city)+'_'+sl(name);}
+function allFoodSafe(kind,city){try{return allFood(kind,city);}catch(e){return (kind==='r'?REST:SHOP)[city]||[];}}
+
+/* 1) foto en la ficha de restaurante/tienda: botón 🖼 Foto + imagen grande, igual que en los lugares */
+const _ofPhoto=openFoodByName;
+window.openFoodByName=function(kind,city,name){
+ _ofPhoto(kind,city,name);
+ const host=document.getElementById('sheetInner');if(!host)return;
+ const key=foodKey(kind,city,name);
+ const hero=host.querySelector('.phero');
+ if(hero&&!host.querySelector('#ffoto')){
+  const img=document.createElement('img');img.id='ffoto';img.className='pfoto';img.alt='';img.style.display='none';
+  hero.insertAdjacentElement('afterend',img);
+  const cur=(PC.imgs||{})[key];
+  if(cur){img.src=cur;img.style.display='block';}}
+ const row=host.querySelector('.btnrow');
+ if(row&&!host.querySelector('#ffotobtn')){
+  const b=document.createElement('button');b.className='pillb';b.id='ffotobtn';b.style.marginTop='10px';b.textContent='🖼 Foto';
+  b.onclick=async()=>{
+   const cur=(PC.imgs||{})[key]||'';
+   const u=prompt('Pega la URL de la imagen para este sitio (vacío = quitar foto):',cur);
+   if(u===null)return;
+   PC.imgs=PC.imgs||{};
+   if(u.trim())PC.imgs[key]=u.trim();else delete PC.imgs[key];
+   await pcSave();
+   const img=host.querySelector('#ffoto');
+   if(img){if(u.trim()){img.src=u.trim();img.style.display='block';}else{img.removeAttribute('src');img.style.display='none';}}};
+  row.parentElement.insertBefore(b,row.nextSibling);}};
+
+/* 2) selector de Comer/Cenar cercano por zona */
+let MEALPICK={};
+(async()=>{MEALPICK=await stGet('j26_mealpick')||{};})();
+function dayZones(pos){const arr=DAYS[pos].a||[];const zs=new Set();
+ arr.forEach(a=>{if(a[3]&&window.PZONE&&PZONE[a[3]])zs.add(PZONE[a[3]]);});return [...zs];}
+function mealRow(r,kind,city,pos,slot){
+ const d=document.createElement('div');d.className='rrow';d.style.cursor='pointer';
+ const extra=[r.h&&r.h!==PEN?'🕐 '+r.h:'',r.res&&r.res!==PEN?'📋 '+r.res:''].filter(Boolean).join(' · ');
+ d.innerHTML='<b>'+esc(r.n)+'</b><div class="m1">'+esc(r.z)+' · '+esc(kind==='s'?r.c:r.t)+(kind==='s'?'':' · '+esc(r.p))+'</div>'
+  +(extra?'<div class="m2">'+esc(extra)+'</div>':'')
+  +(r.m&&r.m!==PEN?'<div class="m2">'+esc(r.m)+'</div>':'');
+ d.onclick=async()=>{MEALPICK[pos+'_'+slot]={kind,city,name:r.n};await stSet('j26_mealpick',MEALPICK);
+  const mm=document.getElementById('mealmodal');if(mm)mm.remove();openDay(pos);};
+ return d;}
+window.openMealPicker=function(pos,slot){
+ const city=dayData(pos).city.split(' ')[0].replace('→','');
+ const zones=dayZones(pos);
+ const all=REST[city]||[];
+ const rec=zones.length?all.filter(r=>zones.includes(r.z)):[];
+ const old=document.getElementById('mealmodal');if(old)old.remove();
+ const m=document.createElement('div');m.className='movermodal';m.id='mealmodal';
+ const box=document.createElement('div');box.className='box';
+ box.innerHTML='<h3>'+(slot==='comer'?'🍜 ¿Dónde coméis?':'🍶 ¿Dónde cenáis?')+'</h3>'
+  +'<div class="sub">'+(rec.length?'Cerca de lo que ya tenéis ese día · '+city:'Sin coincidencia cercana ese día · '+city)+'</div>';
+ const recWrap=document.createElement('div');recWrap.style.marginTop='6px';
+ if(rec.length){const lbl=document.createElement('div');lbl.className='lbl';lbl.textContent='📍 Recomendados';recWrap.appendChild(lbl);
+  rec.forEach(r=>recWrap.appendChild(mealRow(r,'r',city,pos,slot)));}
+ else{const p=document.createElement('p');p.className='hint';p.textContent='Ningún restaurante guardado coincide con la zona de las actividades de hoy.';recWrap.appendChild(p);}
+ box.appendChild(recWrap);
+ const allBtn=document.createElement('button');allBtn.className='pillb';allBtn.style.marginTop='10px';
+ allBtn.textContent='Ver toda la lista de '+city+' ('+all.length+')';
+ const allWrap=document.createElement('div');allWrap.style.cssText='display:none;margin-top:8px';
+ allBtn.onclick=()=>{const on=allWrap.style.display!=='none';allWrap.style.display=on?'none':'block';
+  allBtn.textContent=on?('Ver toda la lista de '+city+' ('+all.length+')'):'Ocultar lista completa';
+  if(!on&&!allWrap.childNodes.length)all.forEach(r=>allWrap.appendChild(mealRow(r,'r',city,pos,slot)));};
+ box.appendChild(allBtn);box.appendChild(allWrap);
+ const cerrar=document.createElement('button');cerrar.className='btn g';cerrar.style.cssText='width:100%;margin-top:12px';cerrar.textContent='Cerrar';
+ cerrar.onclick=()=>m.remove();
+ box.appendChild(cerrar);m.appendChild(box);document.body.appendChild(m);
+ m.onclick=e=>{if(e.target===m)m.remove();};};
+
+/* 3) pintar los huecos "MEAL:comer"/"MEAL:cenar" dentro del día */
+function renderMealSlots(pos){
+ const host=document.getElementById('sheetInner');if(!host)return;
+ let acts;try{acts=dayActs(pos)}catch(e){acts=null}
+ if(!acts)return;
+ host.querySelectorAll('.acts li').forEach((li,i)=>{
+  const a=acts[i];if(!a||(a[3]!=='MEAL:comer'&&a[3]!=='MEAL:cenar'))return;
+  const slot=a[3]==='MEAL:comer'?'comer':'cenar';
+  const pick=MEALPICK[pos+'_'+slot];
+  const t=li.querySelector('.t');const n=li.querySelector('.n');const link=li.querySelector('.plink');
+  if(pick){
+   if(t)t.textContent=(slot==='comer'?'🍜 ':'🍶 ')+pick.name;
+   if(n)n.remove();if(link)link.remove();
+   const wrap=document.createElement('div');
+   const a1=document.createElement('span');a1.className='plink';a1.textContent='Ver ficha del lugar ›';
+   a1.onclick=(e)=>{e.stopPropagation();openFoodByName(pick.kind,pick.city,pick.name);};
+   const a2=document.createElement('span');a2.className='plink';a2.style.marginLeft='14px';a2.textContent='Cambiar ›';
+   a2.onclick=(e)=>{e.stopPropagation();openMealPicker(pos,slot);};
+   wrap.appendChild(a1);wrap.appendChild(a2);li.appendChild(wrap);
+   const photoUrl=(PC.imgs||{})[foodKey(pick.kind,pick.city,pick.name)];
+   if(photoUrl&&!li.classList.contains('hasThumb')){
+    const body=document.createElement('div');body.className='actBody';
+    while(li.firstChild)body.appendChild(li.firstChild);
+    const img=document.createElement('img');img.className='actThumb';img.alt='';img.referrerPolicy='no-referrer';
+    img.onerror=()=>img.remove();img.src=photoUrl;
+    li.classList.add('hasThumb');li.appendChild(img);li.appendChild(body);}
+  }else{
+   if(t)t.textContent=slot==='comer'?'🍜 Elige dónde comer':'🍶 Elige dónde cenar';
+   if(a[4]){
+    if(n){n.textContent=a[4];}
+    else{const nn=document.createElement('div');nn.className='n';nn.textContent=a[4];
+     if(t)t.insertAdjacentElement('afterend',nn);else li.appendChild(nn);}}
+   if(!editActs){li.style.cursor='pointer';li.onclick=()=>openMealPicker(pos,slot);}}});}
+const _odMeal=openDay;openDay=function(pos){_odMeal(pos);renderMealSlots(pos);};
+})();
+</script>
+
+<style>
+.rthumb{width:48px;height:48px;border-radius:12px;object-fit:cover;flex-shrink:0}
+.pl .ki img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+</style>
+<script>
+/* ══ v39: foto (en vez de icono/kanji) en Restaurantes, Tiendas, Lugares y en las tarjetas del itinerario que aún no la tenían ══ */
+(function(){
+function fk(kind,city,name){const sl=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,30);return 'f_'+kind+'_'+sl(city)+'_'+sl(name);}
+const mapsQ=r=>encodeURIComponent(r.n+' '+(r.__city||'')+' Japan');
+
+/* si bootFotos() falló alguna vez (red, CORS…), los fallos quedan cacheados como '' para siempre y no se
+   reintentan — lo reseteamos UNA vez para darle a todo el listado una segunda oportunidad real */
+(async()=>{try{
+ const done=await stGet('j26_fotoretry_v1');if(done)return;
+ const cache=await stGet(FKEY)||{};
+ let changed=false;
+ Object.keys(cache).forEach(k=>{if(cache[k]===''){delete cache[k];changed=true;}});
+ if(changed)await stSet(FKEY,cache);
+ await stSet('j26_fotoretry_v1',true);
+ BOOTP=null;FOTOURLS=null;
+ await bootFotos();
+ if(document.getElementById('lugares'))renderLug();
+}catch(e){}})();
+
+/* 1) foto en las filas de Restaurantes / Tiendas / Cerca de aquí (todas pasan por rrow) */
+window.rrow=function(r,shop){const q=mapsQ(r);const nm=esc(r.n).replace(/'/g,"\\'");
+ const photo=(PC.imgs||{})[fk(shop?'s':'r',r.__city,r.n)];
+ return '<div class="rrow">'+(photo?'<img class="rthumb" src="'+esc(photo)+'" alt="" onerror="this.remove()">':'')
+ +'<div class="rtx"><b>'+esc(r.n)+'</b>'
+ +'<div class="m1">'+esc(r.z)+' · '+esc(shop?r.c:r.t)+(shop?'':' · '+esc(r.p))+' · '+esc(r.h)+'</div>'
+ +(r.m&&r.m!==PEN?'<div class="m2">'+esc(r.m)+'</div>':'')+'</div>'
+ +'<div class="rbtns"><button class="ib" onclick="openFoodByName(\''+(shop?'s':'r')+'\',\''+r.__city+'\',\''+nm+'\')">i Info</button>'
+ +'<a class="ib pin" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+q+'">📍</a>'
+ +'<a class="ib pin" target="_blank" rel="noopener" href="https://maps.apple.com/?q='+q+'">🍎</a></div></div>'};
+
+/* 2) foto en vez de kanji en Lugares, cuando exista */
+window.renderLug=function(){
+ const q=($('#q').value||'').toLowerCase();const r=$('#lugares');r.innerHTML='';
+ CITY_ORDER.forEach(city=>{
+  const items=Object.entries(P).filter(([id,p])=>p.city===city&&(curCat==="Todos"||p.cat===curCat)&&(!q||p.n.toLowerCase().includes(q)));
+  if(!items.length)return;
+  const h=document.createElement('div');h.className='cityh';
+  h.innerHTML='<span class="st">'+(CITY_IC[city]||'📍')+'</span><b>'+city+'</b>';r.appendChild(h);
+  items.forEach(([id,p])=>{const el=document.createElement('div');el.className='pl';
+   const maps='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.n+' '+p.city+' Japan');
+   const custom=(PC.imgs||{})[id];
+   const wikiT=window.WIKI&&WIKI[id];const cached=wikiT&&window.FOTOURLS&&FOTOURLS[wikiT];
+   const src=custom||cached||'';
+   el.innerHTML='<div class="ki" style="background:'+(CAT_COL[p.cat]||'#3d5af1')+'">'
+    +(src?'<img src="'+esc(src)+'" alt="" onerror="this.parentElement.textContent=\''+esc(p.k)+'\'">':esc(p.k))+'</div>'
+   +'<div class="tt"><b>'+esc(p.n)+'</b><small>'+esc(p.cat)+' · '+esc(p.dia)+(p.gos?' · 御朱印':'')+'</small></div>'
+   +'<div class="btns"><button class="info">ℹ Info</button><a class="maps" target="_blank" rel="noopener" href="'+maps+'">📍</a></div>';
+   el.querySelector('.info').onclick=()=>openPlace(id);r.appendChild(el);
+   if(!src&&wikiT){(async()=>{try{await bootFotos();const url=FOTOURLS&&FOTOURLS[wikiT];
+    if(url){const img=document.createElement('img');img.alt='';img.onerror=()=>img.remove();img.src=url;
+     const ki=el.querySelector('.ki');ki.textContent='';ki.appendChild(img);}}catch(e){}})();}});});};
+
+/* 3) las 3 menciones de tienda del itinerario que aún eran solo texto: las enlazo a su ficha de SHOP para que puedan llevar foto */
+try{
+ const links=[[14,'AKKY','Tokio'],[16,'Harry Potter Shop Harajuku','Tokio'],[17,'Uniqlo Ginza Flagship','Tokio']];
+ links.forEach(([di,txt,city])=>{const arr=DAYS[di]&&DAYS[di].a;if(!arr)return;
+  arr.forEach(a=>{if((a[1]||'').includes(txt))a[3]='FOOD:s:'+city+':'+txt;});});
+}catch(e){}
+function foodThumb(pos){
+ const host=document.getElementById('sheetInner');if(!host)return;
+ let acts;try{acts=dayActs(pos)}catch(e){acts=null}
+ if(!acts)return;
+ host.querySelectorAll('.acts li').forEach((li,i)=>{
+  const a=acts[i];const id=a&&a[3];if(!id||typeof id!=='string'||!id.startsWith('FOOD:')||li.classList.contains('hasThumb'))return;
+  const [,kind,city,name]=id.split(':');
+  const photo=(PC.imgs||{})[fk(kind,city,name)];if(!photo)return;
+  const body=document.createElement('div');body.className='actBody';
+  while(li.firstChild)body.appendChild(li.firstChild);
+  const img=document.createElement('img');img.className='actThumb';img.alt='';img.referrerPolicy='no-referrer';
+  img.onerror=()=>img.remove();img.src=photo;
+  li.classList.add('hasThumb');li.appendChild(img);li.appendChild(body);});}
+const _odFood=openDay;openDay=function(pos){_odFood(pos);foodThumb(pos);};
 })();
 </script>
 
