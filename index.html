@@ -1259,7 +1259,21 @@ function openStats(){mark({t:'stats'});
 let _scT;window.addEventListener('scroll',()=>{clearTimeout(_scT);_scT=setTimeout(()=>{if(!ST.sheet){ST.scroll[ST.tab]=window.scrollY;stateSave()}},250)},{passive:true});
 /* [J] PWA: solo se registra si está servida por http(s); en file:// se omite en silencio */
 if('serviceWorker'in navigator&&location.protocol.startsWith('http')){
- addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+ addEventListener('load',()=>{
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+   // comprobar si hay versión nueva cada vez que se abre la app
+   reg.update().catch(()=>{});
+   // cuando el SW nuevo esté listo, pedirle que tome el control ya
+   reg.addEventListener('updatefound',()=>{
+    const nw=reg.installing;if(!nw)return;
+    nw.addEventListener('statechange',()=>{
+     if(nw.state==='installed'&&navigator.serviceWorker.controller){nw.postMessage('skipWaiting');}});});
+  }).catch(()=>{});
+  // cuando el SW nuevo toma el control, recargar UNA vez para servir el index fresco
+  let reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+   if(reloaded)return;reloaded=true;location.reload();});
+ });}
 /* ══ INIT v5: cargar todo y reanudar donde estaba ══ */
 (async()=>{
  VIS=await stGet('j26_vis')||{};FAV=await stGet('j26_fav')||{};
