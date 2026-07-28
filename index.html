@@ -4114,24 +4114,35 @@ window.rrow=function(r,shop){const q=mapsQ(r);const nm=esc(r.n).replace(/'/g,"\\
 function idFromRow(el){
  /* el id exacto ya vive en el onclick del botón Info: ()=>openPlace(id) */
  const btn=el.querySelector('.info');
- if(btn&&btn.__pid)return btn.__pid;              /* si lo guardamos antes */
+ if(btn&&btn.__pid)return btn.__pid;
  if(btn&&typeof btn.onclick==='function'){
   const m=/openPlace\(['"]([^'"]+)['"]\)/.exec(btn.onclick.toString());
   if(m)return m[1];}
  return null;}
-function decorateLugPhotos(){
+function putLugPhoto(ki,id,url){
+ if(!ki||ki.querySelector('img'))return;
+ const img=document.createElement('img');img.alt='';img.referrerPolicy='no-referrer';
+ img.onerror=()=>{img.remove();ki.textContent=(P[id]&&P[id].k)||'';};
+ img.src=url;ki.textContent='';ki.appendChild(img);}
+async function decorateLugPhotos(){
  const host=document.getElementById('lugares');if(!host)return;
+ /* 1º: fotos personalizadas (instantáneas, no necesitan red) */
  host.querySelectorAll('.pl').forEach(el=>{
   const ki=el.querySelector('.ki');if(!ki||ki.querySelector('img'))return;
   const id=idFromRow(el);if(!id||!P[id])return;
-  const custom=(PC.imgs||{})[id];
-  const wikiT=(typeof WIKI!=='undefined')?WIKI[id]:null;
-  const cached=wikiT&&(typeof FOTOURLS!=='undefined')&&FOTOURLS&&FOTOURLS[wikiT];
-  const src=custom||cached;
-  const swap=url=>{if(ki.querySelector('img'))return;const img=document.createElement('img');img.alt='';img.referrerPolicy='no-referrer';img.onerror=()=>{img.remove();ki.textContent=P[id].k||'';};img.src=url;ki.textContent='';ki.appendChild(img);};
-  if(src){swap(src);return;}
-  if(wikiT){(async()=>{try{await bootFotos();const url=FOTOURLS&&FOTOURLS[wikiT];if(url)swap(url);}catch(e){}})();}
- });}
+  const custom=(PC.imgs||{})[id];if(custom)putLugPhoto(ki,id,custom);});
+ /* 2º: fotos de Wikipedia — MISMO camino que el itinerario: esperar a bootFotos() SIEMPRE */
+ try{
+  await bootFotos();
+  /* re-buscar los .pl ahora, por si el DOM se redibujó mientras esperábamos */
+  document.querySelectorAll('#lugares .pl').forEach(el=>{
+   const ki=el.querySelector('.ki');if(!ki||ki.querySelector('img'))return;
+   const id=idFromRow(el);if(!id||!P[id])return;
+   if((PC.imgs||{})[id])return;                 /* ya la puso la personalizada */
+   const t=(typeof WIKI!=='undefined')?WIKI[id]:null;
+   const url=t&&FOTOURLS?FOTOURLS[t]:'';
+   if(url)putLugPhoto(ki,id,url);});
+ }catch(e){}}
 const _rlPhoto=renderLug;
 window.renderLug=function(){_rlPhoto();try{decorateLugPhotos();}catch(e){}};
 
