@@ -2500,6 +2500,7 @@ function seg4(w){dias.style.display=w==='dias'?'block':'none';lug.style.display=
  tabsR.style.display=w==='rest'?'block':'none';tabsS.style.display=w==='shop'?'block':'none';
  if(w==='rest')renderRest();if(w==='shop')renderShop();
  segG.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===w));stSet('j26_seg',w);}
+window.seg4=seg4;
 segG.querySelectorAll('button').forEach(b=>b.onclick=()=>{hap(8);seg4(b.dataset.s)});
 stGet('j26_seg').then(v=>seg4(v==='rest'||v==='shop'||v==='lug'?v:'dias'));
 /* Cerca de aquí + prioridad + datos ampliados en cada ficha */
@@ -4191,6 +4192,30 @@ document.addEventListener('click',e=>{
  e.stopPropagation();                              /* que no dispare abrir la ficha de detrás */
  zoom(src);
 },true);
+})();
+</script>
+
+<script>
+/* ══ v41: FIX real — al ABRIR la pestaña Lugares, pintar las fotos (antes solo se hacía en renderLug,
+   que no se llama al cambiar de pestaña; por eso FOTOURLS estaba lleno pero seguían los kanjis) ══ */
+(function(){
+function paintLug(){
+ const lug=document.getElementById('tab-lug');
+ if(!lug||lug.style.display==='none')return;      /* solo si Lugares está visible */
+ if(typeof decorateLugPhotos==='function'){try{decorateLugPhotos();}catch(e){}}
+}
+/* envolver seg4 (la función que muestra/oculta las pestañas) para pintar al mostrar Lugares */
+if(typeof window.seg4==='function'){
+ const _seg4=window.seg4;window.seg4=function(w){_seg4(w);if(w==='lug')setTimeout(paintLug,0);};
+}
+/* red de seguridad: cada vez que se pulsa la barra de pestañas, si Lugares queda visible, pintar */
+setTimeout(()=>{
+ document.querySelectorAll('nav button, #segG button').forEach(b=>{
+  b.addEventListener('click',()=>setTimeout(paintLug,60));});
+},300);
+/* y un intento al arranque, por si Lugares es la pestaña inicial guardada */
+setTimeout(paintLug,400);
+setTimeout(paintLug,1200);
 })();
 </script>
 
