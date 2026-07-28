@@ -1392,7 +1392,8 @@ openPlace=function(id){_opE(id);
    const u=prompt('Pega la URL de la imagen para este lugar (vacío = volver a la automática):',cur);
    if(u===null)return;PC.imgs=PC.imgs||{};
    if(u.trim())PC.imgs[id]=u.trim();else delete PC.imgs[id];
-   await pcSave();openPlace(id);};
+   await pcSave();openPlace(id);
+   try{if(typeof renderLug==='function')renderLug();}catch(e){}};
   row.appendChild(b);}
 };
 /* loadFoto con prioridad a foto personalizada */
