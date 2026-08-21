@@ -4148,7 +4148,26 @@ function renderMealSlots(pos){
     else{const nn=document.createElement('div');nn.className='n';nn.textContent=a[4];
      if(t)t.insertAdjacentElement('afterend',nn);else li.appendChild(nn);}}
    if(!editActs){li.style.cursor='pointer';li.onclick=()=>openMealPicker(pos,slot);}}});}
-const _odMeal=openDay;openDay=function(pos){_odMeal(pos);renderMealSlots(pos);};
+/* 4) tras las actividades del día: restaurantes y tiendas de tu lista que caen
+   en la misma zona que lo que ya tenéis planeado ese día (mismo cálculo de zona
+   que ya usa el selector de comer/cenar, pero visible siempre, sin tener que tocar) */
+function renderDayNearby(pos){
+ const host=document.getElementById('sheetInner');if(!host||host.querySelector('.daynear'))return;
+ const city=dayData(pos).city.split(' ')[0].replace('→','');
+ const zones=dayZones(pos);if(!zones.length)return;
+ const rests=(REST[city]||[]).filter(r=>zones.includes(r.z));
+ const shops=(SHOP[city]||[]).filter(r=>zones.includes(r.z));
+ if(!rests.length&&!shops.length)return;
+ rests.forEach(r=>r.__city=city);shops.forEach(r=>r.__city=city);
+ const wrap=document.createElement('div');wrap.className='card daynear';
+ wrap.innerHTML='<h3>🍜🛍 Cerca de tu ruta de hoy</h3>'
+  +'<p class="hint" style="margin-bottom:8px">De tu lista guardada, en la misma zona que las actividades de hoy.</p>'
+  +(rests.length?'<div class="lbl">🍜 Restaurantes</div>'+rests.map(r=>window.rrow(r,false)).join(''):'')
+  +(shops.length?'<div class="lbl" style="margin-top:'+(rests.length?'10px':'0')+'">🛍 Tiendas</div>'+shops.map(r=>window.rrow(r,true)).join(''):'');
+ const acts=host.querySelector('.acts');
+ const anchor=acts?(acts.closest('.blk')||acts):null;
+ if(anchor)anchor.after(wrap);else host.appendChild(wrap);}
+const _odMeal=openDay;openDay=function(pos){_odMeal(pos);renderMealSlots(pos);try{renderDayNearby(pos);}catch(e){}};
 })();
 </script>
 
