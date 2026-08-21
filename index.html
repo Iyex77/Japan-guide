@@ -132,7 +132,7 @@ nav button.on{background:var(--pri);color:#fff}
 .pl .btns button,.pl .btns a{border:none;border-radius:999px;font-family:'Quicksand',sans-serif;font-size:12.5px;font-weight:700;padding:8px 13px;cursor:pointer;text-decoration:none}
 .pl .info{background:var(--pri);color:#fff}
 .pl .maps{background:#eceef6;color:var(--ink)}
-.pl .notabtn{background:var(--amar);color:var(--amarb)}
+.notelink{color:var(--amarb);font-family:'Shippori Mincho',serif;font-weight:700;cursor:pointer}
 .notapanel{background:var(--card);border-radius:16px;box-shadow:var(--sh2);padding:12px 14px;margin:-4px 0 10px;font-size:13.5px;color:var(--ink);white-space:pre-wrap;animation:fade .18s ease}
 /* frases */
 .fr{background:var(--card);border-radius:var(--r);box-shadow:var(--sh2);padding:13px 15px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
@@ -4199,23 +4199,41 @@ function decorateLugPhotos(){
   ki.textContent='';ki.appendChild(img);
   window.__loadThumb(img,id).then(()=>{if(!ki.querySelector('img'))ki.textContent=kanji;});
  });}
-/* botón de notas en Lugares: solo aparece si ya has escrito algo para ese sitio;
-   al tocarlo despliega/pliega la nota debajo de la fila, sin abrir la ficha */
+/* enlace de texto "› Ver nota" (mismo estilo que el badge de Goshuin): solo aparece
+   si ya has escrito algo para ese sitio; al tocarlo despliega/pliega la nota debajo
+   de la fila, sin abrir la ficha */
+function noteToggle(link,afterEl,val){
+ link.onclick=(e)=>{e.stopPropagation();
+  const nxt=afterEl.nextElementSibling;
+  if(nxt&&nxt.classList.contains('notapanel')){nxt.remove();link.textContent='› Ver nota';return}
+  const panel=document.createElement('div');panel.className='notapanel';panel.textContent=val;
+  afterEl.after(panel);link.textContent='‹ Ocultar nota';};}
 function decorateLugNotes(){
  const host=document.getElementById('lugares');if(!host)return;
  host.querySelectorAll('.pl').forEach(el=>{
-  const btns=el.querySelector('.btns');if(!btns||btns.dataset.notaTried==='1')return;
+  const small=el.querySelector('.tt small');if(!small||small.dataset.notaTried==='1')return;
   const id=idFromRow(el);if(!id)return;
-  btns.dataset.notaTried='1';
+  small.dataset.notaTried='1';
   stGet('j26_pnota_'+id).then(v=>{
    if(!v||!v.trim())return;
-   const b=document.createElement('button');b.className='notabtn';b.textContent='📝';b.title='Ver tu nota';
-   btns.insertBefore(b,btns.firstChild);
-   b.onclick=(e)=>{e.stopPropagation();
-    const nxt=el.nextElementSibling;
-    if(nxt&&nxt.classList.contains('notapanel')){nxt.remove();return}
-    const panel=document.createElement('div');panel.className='notapanel';panel.textContent=v;
-    el.after(panel);};
+   const link=document.createElement('span');link.className='notelink';link.textContent='› Ver nota';
+   small.appendChild(document.createTextNode(' · '));small.appendChild(link);
+   noteToggle(link,el,v);
+  });
+ });}
+/* mismo enlace pero en las actividades del itinerario, reutilizando el id de lugar
+   que ya lleva el "Ver ficha del lugar ›" de cada actividad */
+function decorateActNotes(){
+ const host=document.getElementById('sheetInner');if(!host)return;
+ host.querySelectorAll('.acts li .plink').forEach(plink=>{
+  const li=plink.closest('li');if(!li||li.dataset.notaTried==='1')return;
+  const m=/openPlace\('([^']+)'\)/.exec(plink.getAttribute('onclick')||'');if(!m)return;
+  li.dataset.notaTried='1';
+  stGet('j26_pnota_'+m[1]).then(v=>{
+   if(!v||!v.trim())return;
+   const link=document.createElement('span');link.className='notelink';link.textContent='› Ver nota';
+   plink.after(document.createTextNode(' · '),link);
+   noteToggle(link,li,v);
   });
  });}
 const _rlPhoto=renderLug;
@@ -4240,7 +4258,7 @@ function foodThumb(pos){
   const img=document.createElement('img');img.className='actThumb';img.alt='';img.referrerPolicy='no-referrer';
   img.onerror=()=>img.remove();img.src=photo;
   li.classList.add('hasThumb');li.appendChild(img);li.appendChild(body);});}
-const _odFood=openDay;openDay=function(pos){_odFood(pos);foodThumb(pos);};
+const _odFood=openDay;openDay=function(pos){_odFood(pos);foodThumb(pos);try{decorateActNotes();}catch(e){}};
 })();
 </script>
 
