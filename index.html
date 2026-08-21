@@ -3349,7 +3349,7 @@ window.openDay=function(pos){_odG(pos);
   const g=P[id].gos;if(!g||g===PEN)return;
   if(li.querySelector('.gchip'))return;
   const t=li.querySelector('.t')||li;
-  t.insertAdjacentHTML('afterend','<div class="gchip">\u5fa1\u6731\u5370 Goshuin \u00b7 '+esc(''+g)+'</div>');});};
+  t.insertAdjacentHTML('afterend','<div class="gchip">Goshuin \u00b7 '+esc(''+g)+'</div>');});};
 })();
 </script>
 
@@ -4231,8 +4231,9 @@ function decorateActNotes(){
   li.dataset.notaTried='1';
   stGet('j26_pnota_'+m[1]).then(v=>{
    if(!v||!v.trim())return;
-   const link=document.createElement('span');link.className='notelink';link.textContent='› Ver nota';
-   plink.after(document.createTextNode(' · '),link);
+   const wrap=document.createElement('div');
+   const link=document.createElement('span');link.className='plink';link.textContent='› Ver nota';
+   wrap.appendChild(link);plink.after(wrap);
    noteToggle(link,li,v);
   });
  });}
