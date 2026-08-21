@@ -4529,5 +4529,80 @@ setTimeout(()=>{
 })();
 </script>
 
+<script>
+/* ══ v44: avisos de tiendas/restaurantes cerca por GPS, usando las mismas zonas
+   de "Cerca de aquí" (PZONE/REST/SHOP) pero con tu ubicación real en vez de
+   requerir abrir la ficha de un sitio a mano ══ */
+(function(){
+/* centro aproximado de cada zona (para saber cuál está más cerca de ti, no para navegación) */
+const ZC={
+ Tokio:{akihabara:[35.7022,139.7742],asakusa:[35.7118,139.7966],kappabashi:[35.7136,139.7908],
+  ueno:[35.7141,139.7774],yanaka:[35.7272,139.7669],akasaka:[35.6735,139.7365],azabudai:[35.6605,139.7423],
+  nakameguro:[35.6446,139.6989],ikebukuro:[35.7295,139.7109],sugamo:[35.7333,139.7394],
+  ginza:[35.6717,139.7650],marunouchi:[35.6813,139.7660],tsukiji:[35.6654,139.7707],
+  odaiba:[35.6197,139.7756],'monzen-nakacho':[35.6720,139.7963],oi:[35.5720,139.7440],
+  shibuya:[35.6595,139.7005],harajuku:[35.6702,139.7027],omotesando:[35.6654,139.7124],
+  shinjuku:[35.6896,139.7006],skytree:[35.7101,139.8107],kanda:[35.6918,139.7710],station:[35.6812,139.7671]},
+ Kyoto:{gion:[35.0037,135.7756],pontocho:[35.0095,135.7710],centro:[35.0037,135.7688],
+  'centro-oeste':[35.0142,135.7482],higashiyama:[34.9949,135.7850],station:[34.9858,135.7588],
+  kibune:[35.1219,135.7647]},
+ Osaka:{namba:[34.6656,135.5008],shinsaibashi:[34.6746,135.5013],umeda:[34.7025,135.4959],
+  tennoji:[34.6457,135.5133],sumiyoshi:[34.6125,135.4930],'castillo-osaka':[34.6873,135.5262],
+  minoh:[34.8467,135.4728],usj:[34.6654,135.4323],tenjinbashi:[34.7024,135.5155]},
+ Takayama:{takayama:[36.1408,137.2528],shirakawago:[36.2578,136.9066],hirayu:[36.1897,137.5814]}
+};
+function hav(a,b,c,d){const R=6371000,toRad=x=>x*Math.PI/180;
+ const dLat=toRad(c-a),dLng=toRad(d-b);
+ const s=Math.sin(dLat/2)**2+Math.cos(toRad(a))*Math.cos(toRad(c))*Math.sin(dLng/2)**2;
+ return 2*R*Math.asin(Math.sqrt(s));}
+function nearestZone(lat,lng){let best=null;
+ Object.entries(ZC).forEach(([city,zones])=>{
+  Object.entries(zones).forEach(([zone,c])=>{
+   const d=hav(lat,lng,c[0],c[1]);
+   if(!best||d<best.dist)best={city,zone,dist:d};});});
+ return best;}
+const zoneMatch=(z,zone)=>(z||'').toLowerCase().includes(zone);
+let geoWatchId=null,lastZoneKey=null;
+function removeNearCard(){const c=document.getElementById('nearcard');if(c)c.remove();lastZoneKey=null;}
+function paintNearCard(res){
+ if(!res||res.dist>800){removeNearCard();return;}
+ const shops=(SHOP[res.city]||[]).filter(r=>zoneMatch(r.z,res.zone));
+ const rests=(REST[res.city]||[]).filter(r=>zoneMatch(r.z,res.zone));
+ if(!shops.length&&!rests.length){removeNearCard();return;}
+ shops.forEach(r=>r.__city=res.city);rests.forEach(r=>r.__city=res.city);
+ const key=res.city+'|'+res.zone;
+ if(lastZoneKey===key&&document.getElementById('nearcard'))return; /* misma zona: no repintar en cada lectura del GPS */
+ lastZoneKey=key;
+ let card=document.getElementById('nearcard');
+ if(!card){card=document.createElement('div');card.className='card';card.id='nearcard';
+  const anchor=document.getElementById('nochecard');
+  if(anchor)anchor.after(card);else document.querySelector('#tab-ini main,#tab-ini')?.appendChild(card);}
+ card.innerHTML='<h3>📍 Cerca de ti ahora</h3>'
+  +(shops.length?'<div class="lbl" style="margin:6px 0 2px">🛍 Tiendas</div>'+shops.map(r=>window.rrow(r,true)).join(''):'')
+  +(rests.length?'<div class="lbl" style="margin:10px 0 2px">🍜 Restaurantes</div>'+rests.map(r=>window.rrow(r,false)).join(''):'')
+  +'<button class="btn g mini" id="nearclose" style="margin-top:10px">Ocultar por ahora</button>';
+ card.querySelector('#nearclose').onclick=()=>card.remove();}
+function startGeo(){
+ if(!navigator.geolocation||geoWatchId!=null)return;
+ geoWatchId=navigator.geolocation.watchPosition(
+  pos=>paintNearCard(nearestZone(pos.coords.latitude,pos.coords.longitude)),
+  ()=>{},{enableHighAccuracy:false,maximumAge:60000,timeout:20000});}
+function stopGeo(){if(geoWatchId!=null){navigator.geolocation.clearWatch(geoWatchId);geoWatchId=null;}removeNearCard();}
+async function setGeoOn(v){await stSet('j26_geoon',v);if(v)startGeo();else stopGeo();}
+(async()=>{
+ const on=await stGet('j26_geoon');if(on)startGeo();
+ const tab=document.getElementById('tab-util');if(!tab)return;
+ const card=document.createElement('div');card.className='card';
+ card.innerHTML='<h3>📍 Avisos de tiendas y restaurantes cerca</h3>'
+  +'<p class="hint" style="margin-bottom:10px">Si lo activas, cuando estés cerca de una zona con tiendas o restaurantes de tu lista, aparecerá un aviso en Inicio. Solo usa tu ubicación en el móvil — no se envía ni se guarda en ningún sitio.</p>'
+  +'<button class="btn'+(on?'':' g')+'" id="geotoggle">'+(on?'✔ Activado':'Activar avisos cercanos')+'</button>';
+ tab.appendChild(card);
+ card.querySelector('#geotoggle').onclick=async()=>{
+  const cur=await stGet('j26_geoon');const nv=!cur;await setGeoOn(nv);
+  const b=card.querySelector('#geotoggle');b.textContent=nv?'✔ Activado':'Activar avisos cercanos';
+  b.className='btn'+(nv?'':' g');};
+})();
+})();
+</script>
 </body>
 </html>
