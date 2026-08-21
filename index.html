@@ -2403,7 +2403,7 @@ const REST={
 {n:'Fukutaro',z:'namba',t:'Okonomiyaki/negiyaki',p:PEN,h:PEN,m:'Alternativa local a Mizuno'},
 {n:'Tendon Makino',z:'namba',t:'Tempura sobre arroz',p:PEN,h:PEN,m:'\u201cPara comer tempura\u201d'},
 {n:'Yakiniku Rikimaru Namba',z:'namba',t:'Yakiniku (buffet)',p:PEN,h:PEN,m:'Carne a la brasa ilimitada'},
-{n:'Kaiten Sushi Ginza Onodera',z:'namba',t:'Sushi de cinta premium',p:PEN,h:PEN,m:'Kaiten de alta gama'},
+{n:'Kaiten Sushi Ginza Onodera',z:'shinsaibashi',t:'Sushi de cinta premium',p:PEN,h:PEN,m:'Kaiten de alta gama'},
 {n:'Dekasan (s\u00e1ndwiches)',z:'shinsaibashi',t:'Sandos',p:PEN,h:PEN,m:'S\u00e1ndwiches XL'},
 {n:'Cheese Tart Pablo',z:'shinsaibashi',t:'Tarta de queso',p:PEN,h:PEN,m:'\u201cIR A POR TARTA DE QUESO\u201d'},
 {n:'Hokkyokusei Shinsaibashi',z:'shinsaibashi',t:'Omurice',p:PEN,h:PEN,m:'El inventor del omurice (1922)'},
@@ -2421,7 +2421,7 @@ const REST={
 {n:'Kichi Kichi Omurice',z:'pontocho',t:'Omurice',p:PEN,h:PEN,m:'El omurice viral; reserva casi imposible'},
 {n:'Kobe Beef Mouriya Gion',z:'gion',t:'Ternera de Kobe',p:'\u20ac\u20ac\u20ac',h:PEN,m:'El homenaje de carne'},
 {n:'Gion Tanto',z:'gion',t:'Okonomiyaki',p:PEN,h:PEN,m:PEN},
-{n:'Sushi Naritaya',z:'gion',t:'Sushi',p:PEN,h:PEN,m:PEN},
+{n:'Sushi Naritaya',z:'arashiyama',t:'Sushi',p:PEN,h:PEN,m:PEN},
 {n:'Katsukura Tonkatsu Sanjo',z:'centro',t:'Tonkatsu',p:PEN,h:PEN,m:'El tonkatsu de Kyoto'},
 {n:'Chao Chao Gyoza Shijo',z:'centro',t:'Gyozas',p:PEN,h:PEN,m:'Gyozas crujientes en barra'},
 {n:'Ramen Sen-no-Kaze',z:'centro',t:'Ramen',p:PEN,h:PEN,m:'Colas diarias; muy valorado'},
@@ -2453,7 +2453,7 @@ const REST={
 {n:'Hidagyu Maruaki',z:'takayama',t:'Ternera Hida',p:'Sets ~\u20ac18 \u00b7 premium ~\u20ac45',h:PEN,m:'El m\u00e1s conocido; sin reserva'},
 {n:'Ajikura',z:'takayama',t:'Ternera Hida (grill o cocer)',p:'Men\u00fa 3p ~\u20ac60',h:PEN,m:'Sin reservas: ir pronto'},
 {n:'Hida (dec. budista)',z:'takayama',t:'Comida barata',p:'\u20ac',h:PEN,m:'\u201cDECORACI\u00d3N BUDISTA. Comer barato\u201d'},
-{n:'Nomura',z:'takayama',t:'Soba',p:PEN,h:PEN,m:'Fideos de trigo sarraceno'},
+{n:'Nomura',z:'shirakawago',t:'Soba',p:PEN,h:PEN,m:'Fideos de trigo sarraceno'},
 {n:'Hanamizuki',z:'shirakawago',t:'Udon',p:PEN,h:PEN,m:'\u201cSHIRAKAWAGO para comer udon\u201d'},
 {n:'Och\u016bdo Cafe',z:'shirakawago',t:'Curry de verduras (limitado)',p:PEN,h:PEN,m:'Un solo plato; raciones limitadas al d\u00eda'},
 {n:'Yoshimoto',z:'hirayu',t:'Cena junto al ryokan',p:PEN,h:PEN,m:'\u201cPARA CENAR EN EL RYOKAN\u201d'},
@@ -2553,7 +2553,7 @@ kiyomizu:'gion',sannenzaka:'gion',yasui:'gion',gion:'gion',yasaka:'gion',hanamik
 pontocho:'pontocho',teramachi:'centro',nishiki:'centro',nishikitenmangu:'centro',nijo:'centro-oeste',
 kyotostation:'station',kyototower:'station',higashihongan:'station',nishihongan:'station',toji:'station',
 sanmachi:'takayama',jinya:'takayama',miyagawa:'takayama',kokubunji:'takayama',shorenji:'takayama',sakurayama:'takayama',
-shirakawago:'shirakawago',hirayu:'hirayu'};
+shirakawago:'shirakawago',hirayu:'hirayu',nambayasaka:'namba',dendentown:'namba',takimikoji:'umeda',namba:'namba',tennojipark:'tennoji',tomboricruise:'namba',shinsaibashisuji:'shinsaibashi',kofukuji:'nara',todaiji:'nara',narapark:'nara',ninenzaka:'higashiyama',teaceremony:'higashiyama',ginkakuji:'higashiyama',nanzenji:'higashiyama',tenjuan:'higashiyama',gosho:'centro',sento:'centro',travelers:'centro',honganji:'station',sanjusangendo:'station',bamboo:'arashiyama',tenryuji:'arashiyama',togetsukyo:'arashiyama',ryoanji:'kinkakuji',kinkakuji:'kinkakuji',fushimi:'fushimi',funasaka:'takayama',higashiyamaprom:'takayama',matsumotocastle:'matsumoto',nawate:'matsumoto',yohashira:'matsumoto',nakamachi:'matsumoto',shiroyama:'shirakawago',wadahouse:'shirakawago',kandahouse:'shirakawago',myozenji:'shirakawago',deaibridge:'shirakawago',fujiday:'fuji',chureito:'fuji',kanadorii:'fuji',shimoyoshida:'fuji',ropeway:'fuji',ubuyagasaki:'fuji',nagasakipark:'fuji',nikko:'nikko',disneysea:'maihama',tower:'akasaka',moriart:'roppongi',horinji:'shinjuku',toyosu:'odaiba'};
 const cityOf=id=>{const c=(P[id]||{}).city||'';if(/Tokio|Fuji/.test(c))return 'Tokio';if(/Osaka|Nara/.test(c))return 'Osaka';if(/Kyoto/.test(c))return 'Kyoto';return 'Takayama'};
 /* prioridad (punto de color) */
 let PRIO={};SYNC_KEYS.push('j26_prio');
