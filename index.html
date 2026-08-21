@@ -4201,8 +4201,10 @@ document.addEventListener('click',e=>{
 (function(){
 function paintLug(){
  const lug=document.getElementById('tab-lug');
- if(!lug||lug.style.display==='none')return;      /* solo si Lugares está visible */
- if(typeof decorateLugPhotos==='function'){try{decorateLugPhotos();}catch(e){}}
+ if(!lug)return;
+ /* decorateLugPhotos vive en el scope de otro <script> (v39) y no es visible aquí;
+    window.renderLug ya la incluye en su cadena, así que pasamos por ahí siempre */
+ if(typeof window.renderLug==='function'){try{window.renderLug();}catch(e){}}
 }
 /* envolver seg4 (la función que muestra/oculta las pestañas) para pintar al mostrar Lugares */
 if(typeof window.seg4==='function'){
