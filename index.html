@@ -765,7 +765,7 @@ const TODOS=[
  ["takky","Confirmar respuesta Takkyubin hoteles","3 borradores enviados desde Gmail","jul"],
  ["nikkotobu","Si Nikkō: reservar Tobu","1 mes antes","30 ago"]
 ];
-let tdone={};
+let tdone={},tdoneMT={};
 function renderPend(mini){
  const host=mini?document.getElementById('pendmini'):document.getElementById('pendlist');
  if(!host)return;
@@ -776,7 +776,7 @@ function renderPend(mini){
   <span class="cb">✓</span><span class="tx"><b>${t[1]}</b><small>${t[2]}</small></span><span class="when">${t[3]}</span></div>`).join('');
  if(mini)html+=`<div class="btnrow"><button class="btn g mini" onclick="openPend()">Ver todos →</button></div>`;
  host.innerHTML=html;}
-async function tgTodo(id){tdone[id]=!tdone[id];if(!tdone[id])delete tdone[id];await stSet('j26_todos',tdone);renderPend(true);renderPend(false);}
+async function tgTodo(id){tdone[id]=!tdone[id];if(!tdone[id])delete tdone[id];tdoneMT[id]=Date.now();await stSet('j26_todos',tdone);await stSet('j26_todos_mt',tdoneMT);renderPend(true);renderPend(false);}
 function openPend(){$('#sheetInner').innerHTML=`<button class="back" onclick="closeSheet()">‹ Atrás</button>
  <div class="phero" style="background:linear-gradient(140deg,#3d5af1,#7286f5)"><div class="k">📋</div><div class="pre">PARA DESPISTADOS</div><h2>Pendientes del viaje</h2><div class="loc">Toca para marcar como hecho · se guarda en el móvil</div></div>
  <div class="card" id="pendlist"></div>`;
@@ -936,7 +936,7 @@ function go(t){document.querySelectorAll('nav button').forEach(b=>b.classList.to
  $('#tab-'+t).classList.add('on');speechSynthesis?.cancel();closeSheet();window.scrollTo(0,0);}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
 /* INIT */
-(async()=>{tdone=await stGet('j26_todos')||{};renderPend(true);
+(async()=>{tdone=await stGet('j26_todos')||{};tdoneMT=await stGet('j26_todos_mt')||{};renderPend(true);
  const r=await stGet('j26_rate');if(r)rate.value=r;conv();})();
 </script>
 <style>
@@ -1198,9 +1198,12 @@ const _go5=go;go=function(t){ST.scroll[ST.tab]=window.scrollY;_go5(t);ST.tab=t;S
 const _cs5=closeSheet;closeSheet=function(){_cs5();ST.sheet=null;stateSave()};
 function mark(sheet){ST.sheet=sheet;stateSave()}
 /* [C] VISITADOS + FAVORITOS */
-let VIS={},FAV={};
-async function tgVis(id){VIS[id]=!VIS[id];if(!VIS[id])delete VIS[id];await stSet('j26_vis',VIS);syncPillas(id);renderLug();}
-async function tgFav(id){FAV[id]=!FAV[id];if(!FAV[id])delete FAV[id];await stSet('j26_fav',FAV);syncPillas(id);renderLug();}
+let VIS={},FAV={},VISMT={},FAVMT={};
+/* VISMT/FAVMT: cuándo se tocó cada id por última vez, para que al sincronizar
+   gane el cambio más reciente de cada sitio en vez de "sumar" ambos dispositivos
+   (eso hacía que un favorito quitado en un móvil reapareciera desde el otro) */
+async function tgVis(id){VIS[id]=!VIS[id];if(!VIS[id])delete VIS[id];VISMT[id]=Date.now();await stSet('j26_vis',VIS);await stSet('j26_vis_mt',VISMT);syncPillas(id);renderLug();}
+async function tgFav(id){FAV[id]=!FAV[id];if(!FAV[id])delete FAV[id];FAVMT[id]=Date.now();await stSet('j26_fav',FAV);await stSet('j26_fav_mt',FAVMT);syncPillas(id);renderLug();}
 function syncPillas(id){const v=document.getElementById('pv'),f=document.getElementById('pf');
  if(v){v.classList.toggle('on',!!VIS[id]);v.textContent=VIS[id]?'✔ Visitado':'☐ Visitado'}
  if(f){f.classList.toggle('on',!!FAV[id]);f.textContent=FAV[id]?'⭐ Favorito':'☆ Favorito'}}
@@ -1287,8 +1290,8 @@ renderPend=function(mini){_rp5(mini);
   host.insertBefore(top,host.firstChild);
   const ctr=document.createElement('div');ctr.className='rowbtns';ctr.style.marginTop='12px';
   ctr.innerHTML=`<button class="pillb ok">✔ Completar todos</button><button class="pillb">↺ Reiniciar</button>`;
-  ctr.children[0].onclick=async()=>{TODOS.forEach(t=>tdone[t[0]]=true);await stSet('j26_todos',tdone);renderPend(false);renderPend(true)};
-  ctr.children[1].onclick=async()=>{tdone={};await stSet('j26_todos',tdone);renderPend(false);renderPend(true)};
+  ctr.children[0].onclick=async()=>{const now=Date.now();TODOS.forEach(t=>{tdone[t[0]]=true;tdoneMT[t[0]]=now});await stSet('j26_todos',tdone);await stSet('j26_todos_mt',tdoneMT);renderPend(false);renderPend(true)};
+  ctr.children[1].onclick=async()=>{const now=Date.now();TODOS.forEach(t=>tdoneMT[t[0]]=now);tdone={};await stSet('j26_todos',tdone);await stSet('j26_todos_mt',tdoneMT);renderPend(false);renderPend(true)};
   host.appendChild(ctr);}};
 /* [G] ESTADÍSTICAS */
 function openStats(){mark({t:'stats'});
@@ -1336,19 +1339,28 @@ if('serviceWorker'in navigator&&location.protocol.startsWith('http')){
 /* ══ INIT v5: cargar todo y reanudar donde estaba ══ */
 (async()=>{
  VIS=await stGet('j26_vis')||{};FAV=await stGet('j26_fav')||{};
- renderLug();
+ VISMT=await stGet('j26_vis_mt')||{};FAVMT=await stGet('j26_fav_mt')||{};
+ /* leer el estado guardado ANTES de la primera renderLug(): esa función hace
+    stateSave() por dentro, y si se llama antes de restaurar ST, graba encima
+    la pestaña por defecto ('ini') justo antes de poder leer la real */
  const st=await stGet('j26_state');
+ renderLug();
  if(st){ST=Object.assign(ST,st);
   if(ST.q){$('#q').value=ST.q}
   if(ST.cat&&ST.cat!=='Todos'){curCat=ST.cat;
    document.querySelectorAll('#lcats button').forEach(b=>b.classList.toggle('on',b.textContent===ST.cat||(ST.cat==='__fav'&&b.textContent.includes('Favoritos'))));renderLug();}
-  if(ST.tab&&ST.tab!=='ini')go(ST.tab);
-  const sh=ST.sheet;
-  if(sh){if(sh.t==='place'&&P[sh.id])openPlace(sh.id);
-   else if(sh.t==='day')openDay(sh.id);
-   else if(sh.t==='vuelos')openVuelos();else if(sh.t==='seguro')openSeguro();
-   else if(sh.t==='hoteles')openHoteles();else if(sh.t==='pend')openPend();
-   else if(sh.t==='stats')openStats();}}
+  /* diferido: la pestaña "Guía" y el resto de la nav aún no existen aquí
+     (los crea un parche posterior), así que go(ST.tab) fallaba en silencio
+     y la app siempre volvía a Inicio tras recargar */
+  setTimeout(()=>{try{
+   if(ST.tab&&ST.tab!=='ini')go(ST.tab);
+   const sh=ST.sheet;
+   if(sh){if(sh.t==='place'&&P[sh.id])openPlace(sh.id);
+    else if(sh.t==='day')openDay(sh.id);
+    else if(sh.t==='vuelos')openVuelos();else if(sh.t==='seguro')openSeguro();
+    else if(sh.t==='hoteles')openHoteles();else if(sh.t==='pend')openPend();
+    else if(sh.t==='stats')openStats();}
+  }catch(e){}},50);}
  bootFotos();
 })();
 </script>
@@ -1515,7 +1527,7 @@ loadFoto=async function(id){const img=document.getElementById('pfoto');
  window._paintCustom=paintCustom;
 })();
 /* [4] SINCRONIZACIÓN por código */
-const SYNC_KEYS=['j26_priv','j26_vis','j26_fav','j26_todos','j26_rate','j26_notas','j26_custom'];
+const SYNC_KEYS=['j26_priv','j26_vis','j26_fav','j26_todos','j26_rate','j26_notas','j26_custom','j26_vis_mt','j26_fav_mt','j26_todos_mt'];
 async function syncExport(){
  const data={_v:1,_fecha:new Date().toISOString()};
  for(const k of SYNC_KEYS){const v=await stGet(k);if(v!=null)data[k]=v}
@@ -3504,12 +3516,24 @@ async function buildExportData(){
  return data;}
 const _stSetBase32=window.stSet;
 async function stSetLocal(k,v){await _stSetBase32(k,v)}
+/* fusiona un mapa {id:true} usando su mt paralelo {id:fecha}: gana quien toc\u00f3
+   ese id m\u00e1s tarde (en cualquiera de los dos dispositivos), en vez de "sumar"
+   ambos lados \u2014 eso era lo que hac\u00eda que un favorito quitado en un sitio
+   reapareciera al llegar el cambio del otro dispositivo */
+async function mergeToggleMap(k,v,mine,remoteMT){
+ const mtKey=k+'_mt';remoteMT=remoteMT||{};
+ const localMT=await stGet(mtKey)||{};
+ const out=Object.assign({},mine);const outMT=Object.assign({},localMT);
+ const ids=new Set([...Object.keys(remoteMT),...Object.keys(v||{})]);
+ ids.forEach(id=>{const rmt=remoteMT[id]||0,lmt=localMT[id]||0;
+  if(rmt>lmt){if(v&&v[id])out[id]=true;else delete out[id];outMT[id]=rmt;}});
+ await stSetLocal(k,out);await stSetLocal(mtKey,outMT);}
 async function mergeApply(data){
- for(const[k,v]of Object.entries(data)){if(k.startsWith('_'))continue;
+ for(const[k,v]of Object.entries(data)){if(k.startsWith('_')||k.endsWith('_mt'))continue;
   const mine=await stGet(k);
+  if(k==='j26_vis'||k==='j26_fav'||k==='j26_todos'){await mergeToggleMap(k,v,mine||{},data[k+'_mt']||{});continue}
   if(mine==null){await stSetLocal(k,v);continue}
-  if(k==='j26_vis'||k==='j26_fav'||k==='j26_todos'){await stSetLocal(k,Object.assign({},v,mine))}
-  else if(k==='j26_priv'){const out=Object.assign({},mine);Object.entries(v).forEach(([a,b])=>{if(!out[a]||!(''+out[a]).trim())out[a]=b});await stSetLocal(k,out)}
+  if(k==='j26_priv'){const out=Object.assign({},mine);Object.entries(v).forEach(([a,b])=>{if(!out[a]||!(''+out[a]).trim())out[a]=b});await stSetLocal(k,out)}
   else if(k==='j26_custom'){const out={places:Object.assign({},(v||{}).places,(mine||{}).places),imgs:Object.assign({},(v||{}).imgs,(mine||{}).imgs)};await stSetLocal(k,out)}
   else if(typeof v==='string'&&typeof mine==='string'&&mine.trim()&&v.trim()&&mine.trim()!==v.trim()){await stSetLocal(k,mine+'\n\u2014 \u2014 \u2014\n'+v)}}}
 /* re-envolver stSet: si ya estaba envuelto por una v31 rota, esta capa manda porque se registra después */
@@ -4268,7 +4292,7 @@ async function delPend(id){
   /* pendiente predefinido: se oculta (se puede recuperar limpiando j26_pendhide) */
   PHIDE=PHIDE||[];if(!PHIDE.includes(id))PHIDE.push(id);
   await stSet('j26_pendhide',PHIDE);}
- if(typeof tdone!=='undefined'&&tdone[id]){delete tdone[id];await stSet('j26_todos',tdone);}
+ if(typeof tdone!=='undefined'&&tdone[id]){delete tdone[id];tdoneMT[id]=Date.now();await stSet('j26_todos',tdone);await stSet('j26_todos_mt',tdoneMT);}
  syncInto();
  if(typeof renderPend==='function'){renderPend(false);renderPend(true);}}
 window.__pendDel=delPend;
