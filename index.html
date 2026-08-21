@@ -132,6 +132,8 @@ nav button.on{background:var(--pri);color:#fff}
 .pl .btns button,.pl .btns a{border:none;border-radius:999px;font-family:'Quicksand',sans-serif;font-size:12.5px;font-weight:700;padding:8px 13px;cursor:pointer;text-decoration:none}
 .pl .info{background:var(--pri);color:#fff}
 .pl .maps{background:#eceef6;color:var(--ink)}
+.pl .notabtn{background:var(--amar);color:var(--amarb)}
+.notapanel{background:var(--card);border-radius:16px;box-shadow:var(--sh2);padding:12px 14px;margin:-4px 0 10px;font-size:13.5px;color:var(--ink);white-space:pre-wrap;animation:fade .18s ease}
 /* frases */
 .fr{background:var(--card);border-radius:var(--r);box-shadow:var(--sh2);padding:13px 15px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
 .fr .txt{flex:1;min-width:0}
@@ -1169,6 +1171,7 @@ renderLug();renderPend(true);
 .stat b{font-family:'Baloo 2',sans-serif;font-size:23px;color:var(--pri);display:block;line-height:1.1}
 .stat small{color:var(--muted);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
 .vbadge{color:#37b36b;font-weight:800;font-size:12px}
+.goshuinbadge{font-family:'Shippori Mincho',serif;color:var(--amarb);font-weight:700;letter-spacing:.3px}
 nav button{padding:7px 9px}
 </style>
 <script>
@@ -1235,7 +1238,8 @@ openPlace=function(id){_op5(id);mark({t:'place',id});
  nc.innerHTML=`<h3>✏️ Notas de este lugar</h3><textarea placeholder="Horario apuntado, qué pedir, recuerdo que compramos aquí…"></textarea>`;
  host.appendChild(nc);const ta=nc.querySelector('textarea');let t0;
  stGet('j26_pnota_'+id).then(v=>{if(v)ta.value=v});
- ta.oninput=()=>{clearTimeout(t0);t0=setTimeout(()=>stSet('j26_pnota_'+id,ta.value),400)};
+ ta.oninput=()=>{clearTimeout(t0);t0=setTimeout(()=>{stSet('j26_pnota_'+id,ta.value);
+  try{if(typeof renderLug==='function')renderLug();}catch(e){}},400)};
  /* fotos locales */
  const fc=document.createElement('div');fc.className='card';
  fc.innerHTML=`<h3>📷 Mis fotos aquí</h3><div class="fotogrid" id="fg"></div>
@@ -1274,7 +1278,7 @@ renderLug=function(){const qv=($('#q').value||'').toLowerCase();ST.q=qv;ST.cat=c
   items.forEach(([id,p])=>{const el=document.createElement('div');el.className='pl';
    const maps=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.n+' '+p.city+' Japan')}`;
    el.innerHTML=`<div class="ki" style="background:${CAT_COL[p.cat]||'#3d5af1'}">${p.k}</div>
-   <div class="tt"><b>${esc(p.n)} ${FAV[id]?'⭐':''}</b><small>${VIS[id]?'<span class="vbadge">✔ visitado</span> · ':''}${esc(p.cat)} · ${esc(p.dia)}${p.gos?' · 御朱印':''}</small></div>
+   <div class="tt"><b>${esc(p.n)} ${FAV[id]?'⭐':''}</b><small>${VIS[id]?'<span class="vbadge">✔ visitado</span> · ':''}${esc(p.cat)} · ${esc(p.dia)}${p.gos?' · <span class="goshuinbadge">Goshuin</span>':''}</small></div>
    <div class="btns"><button class="info">ℹ Info</button><a class="maps" target="_blank" rel="noopener" href="${maps}">📍</a></div>`;
    const btn=el.querySelector('.info');btn.__pid=id;btn.onclick=()=>openPlace(id);r.appendChild(el);});});};
 (function(){const c=$('#lcats');const b=document.createElement('button');b.textContent='⭐ Favoritos';
@@ -4195,8 +4199,27 @@ function decorateLugPhotos(){
   ki.textContent='';ki.appendChild(img);
   window.__loadThumb(img,id).then(()=>{if(!ki.querySelector('img'))ki.textContent=kanji;});
  });}
+/* botón de notas en Lugares: solo aparece si ya has escrito algo para ese sitio;
+   al tocarlo despliega/pliega la nota debajo de la fila, sin abrir la ficha */
+function decorateLugNotes(){
+ const host=document.getElementById('lugares');if(!host)return;
+ host.querySelectorAll('.pl').forEach(el=>{
+  const btns=el.querySelector('.btns');if(!btns||btns.dataset.notaTried==='1')return;
+  const id=idFromRow(el);if(!id)return;
+  btns.dataset.notaTried='1';
+  stGet('j26_pnota_'+id).then(v=>{
+   if(!v||!v.trim())return;
+   const b=document.createElement('button');b.className='notabtn';b.textContent='📝';b.title='Ver tu nota';
+   btns.insertBefore(b,btns.firstChild);
+   b.onclick=(e)=>{e.stopPropagation();
+    const nxt=el.nextElementSibling;
+    if(nxt&&nxt.classList.contains('notapanel')){nxt.remove();return}
+    const panel=document.createElement('div');panel.className='notapanel';panel.textContent=v;
+    el.after(panel);};
+  });
+ });}
 const _rlPhoto=renderLug;
-window.renderLug=function(){_rlPhoto();try{decorateLugPhotos();}catch(e){}};
+window.renderLug=function(){_rlPhoto();try{decorateLugPhotos();}catch(e){}try{decorateLugNotes();}catch(e){}};
 
 /* 3) las 3 menciones de tienda del itinerario que aún eran solo texto: las enlazo a su ficha de SHOP para que puedan llevar foto */
 try{
