@@ -4159,11 +4159,20 @@ function renderDayNearby(pos){
  const shops=(SHOP[city]||[]).filter(r=>zones.includes(r.z));
  if(!rests.length&&!shops.length)return;
  rests.forEach(r=>r.__city=city);shops.forEach(r=>r.__city=city);
+ /* restaurantes y tiendas van cada uno en su propio bloque plegable, cerrado por
+    defecto (reutiliza el mismo look que la agrupación por ciudad en Días) */
+ function block(icon,title,list,shop){
+  if(!list.length)return '';
+  return '<div class="citygrp daynear-blk"><div class="cghead closed"><span>'+icon+' '+title+' ('+list.length+')</span><span class="chv">▼</span></div>'
+   +'<div class="cgbody" style="display:none">'+list.map(r=>window.rrow(r,shop)).join('')+'</div></div>';}
  const wrap=document.createElement('div');wrap.className='card daynear';
  wrap.innerHTML='<h3>🍜🛍 Cerca de tu ruta de hoy</h3>'
   +'<p class="hint" style="margin-bottom:8px">De tu lista guardada, en la misma zona que las actividades de hoy.</p>'
-  +(rests.length?'<div class="lbl">🍜 Restaurantes</div>'+rests.map(r=>window.rrow(r,false)).join(''):'')
-  +(shops.length?'<div class="lbl" style="margin-top:'+(rests.length?'10px':'0')+'">🛍 Tiendas</div>'+shops.map(r=>window.rrow(r,true)).join(''):'');
+  +block('🍜','Restaurantes',rests,false)
+  +block('🛍','Tiendas',shops,true);
+ wrap.querySelectorAll('.daynear-blk .cghead').forEach(h=>h.onclick=()=>{
+  const body=h.nextElementSibling;const closed=h.classList.toggle('closed');
+  body.style.display=closed?'none':'block';});
  const acts=host.querySelector('.acts');
  const anchor=acts?(acts.closest('.blk')||acts):null;
  if(anchor)anchor.after(wrap);else host.appendChild(wrap);}
