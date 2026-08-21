@@ -3537,7 +3537,13 @@ async function mergeApply(data){
   else if(k==='j26_custom'){const out={places:Object.assign({},(v||{}).places,(mine||{}).places),imgs:Object.assign({},(v||{}).imgs,(mine||{}).imgs)};await stSetLocal(k,out)}
   else if(typeof v==='string'&&typeof mine==='string'&&mine.trim()&&v.trim()&&mine.trim()!==v.trim()){await stSetLocal(k,mine+'\n\u2014 \u2014 \u2014\n'+v)}}}
 /* re-envolver stSet: si ya estaba envuelto por una v31 rota, esta capa manda porque se registra después */
-window.stSet=async function(k,v){await _stSetBase32(k,v);if(ROOM&&!applyingRemote)schedulePush();};
+/* solo empuja a la sala cuando cambia algo que de verdad se sincroniza (SYNC_KEYS,
+   diario por día o notas por sitio); antes cualquier guardado — cambiar de pestaña,
+   hacer scroll, abrir una ficha — también disparaba un envío completo, y eso era
+   lo que recargaba la app cada pocos segundos y podía pisar en la nube un cambio
+   real que aún no había llegado */
+function isSyncedKey(k){return SYNC_KEYS.includes(k)||/^j26_diario_\d+$/.test(k)||/^j26_pnota_/.test(k);}
+window.stSet=async function(k,v){await _stSetBase32(k,v);if(ROOM&&!applyingRemote&&isSyncedKey(k))schedulePush();};
 function schedulePush(){if(!firstSnap||!db)return;clearTimeout(pushTimer);
  pushTimer=setTimeout(async()=>{const data=await buildExportData();
   try{await db.collection('rooms').doc(ROOM).set(data)}catch(e){}},1200);}
