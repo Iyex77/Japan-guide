@@ -1527,7 +1527,7 @@ loadFoto=async function(id){const img=document.getElementById('pfoto');
  window._paintCustom=paintCustom;
 })();
 /* [4] SINCRONIZACIÓN por código */
-const SYNC_KEYS=['j26_priv','j26_vis','j26_fav','j26_todos','j26_rate','j26_notas','j26_custom','j26_vis_mt','j26_fav_mt','j26_todos_mt'];
+const SYNC_KEYS=['j26_priv','j26_vis','j26_fav','j26_todos','j26_rate','j26_notas','j26_custom','j26_vis_mt','j26_fav_mt','j26_todos_mt','j26_fotourls'];
 async function syncExport(){
  const data={_v:1,_fecha:new Date().toISOString()};
  for(const k of SYNC_KEYS){const v=await stGet(k);if(v!=null)data[k]=v}
@@ -3534,6 +3534,14 @@ async function mergeApply(data){
   if(k==='j26_vis'||k==='j26_fav'||k==='j26_todos'){await mergeToggleMap(k,v,mine||{},data[k+'_mt']||{});continue}
   if(mine==null){await stSetLocal(k,v);continue}
   if(k==='j26_priv'){const out=Object.assign({},mine);Object.entries(v).forEach(([a,b])=>{if(!out[a]||!(''+out[a]).trim())out[a]=b});await stSetLocal(k,out)}
+  else if(k==='j26_fotourls'){
+   /* cada móvil pesca su foto de Wikipedia por su cuenta y nunca se corrige sola:
+      así los dos acaban viendo fotos distintas para el mismo sitio. Aquí, quien
+      ya tenga una foto real para un título se queda con ella; si un lado no
+      tiene nada (o quedó vacío de un intento fallido) toma la del otro. */
+   const out=Object.assign({},mine);
+   Object.entries(v||{}).forEach(([title,url])=>{if(!out[title])out[title]=url});
+   await stSetLocal(k,out)}
   else if(k==='j26_custom'){const out={places:Object.assign({},(v||{}).places,(mine||{}).places),imgs:Object.assign({},(v||{}).imgs,(mine||{}).imgs)};await stSetLocal(k,out)}
   else if(typeof v==='string'&&typeof mine==='string'&&mine.trim()&&v.trim()&&mine.trim()!==v.trim()){await stSetLocal(k,mine+'\n\u2014 \u2014 \u2014\n'+v)}}}
 /* re-envolver stSet: si ya estaba envuelto por una v31 rota, esta capa manda porque se registra después */
