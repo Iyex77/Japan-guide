@@ -1691,7 +1691,7 @@ openSeguro=function(){mark({t:'seguro'});
  +'<div class="tip">Farmacias en Japón: 薬局 (yakkyoku). Para síntomas leves, los konbini venden analgésicos básicos.</div></div>';
  injectMD();
  document.getElementById('sheet').classList.add('on');document.getElementById('sheet').scrollTop=0;};
-const _ohv9=openHoteles;openHoteles=function(){_ohv9();injectMD();};
+const _ohv9=openHoteles;openHoteles=function(){_ohv9();};
 /* [C] REORDENAR DÍAS + EDITAR ACTIVIDADES */
 let editDias=false;
 function renderDias(){const r=document.getElementById('dias');if(!r)return;r.innerHTML='';
@@ -1851,7 +1851,6 @@ openVuelos=function(){mark({t:'vuelos'});
    if(inp.dataset.si!==undefined&&inp.dataset.si!==''){f.segs[+inp.dataset.si][inp.dataset.ff]=inp.value}
    else{f[inp.dataset.ff]=inp.value}
    await stSet('j26_vuelos',FLY);},400)};});
- injectMD();
  document.getElementById('sheet').classList.add('on');document.getElementById('sheet').scrollTop=0;};
 /* init v10: cargar DMETA y migrar vuelos v9 (campos planos) a tramos */
 (async()=>{DMETA=await stGet('j26_dmeta')||{};
