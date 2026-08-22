@@ -3545,7 +3545,7 @@ async function ensureFirebase(){if(fbReady)return;
 const FS_JSONKEYS=['j26_acts','j26_pendu'];
 async function buildExportData(){
  const data={_v:1,_fecha:new Date().toISOString(),_origin:SELF_ID};
- for(const k of SYNC_KEYS){const v=await stGet(k);if(v!=null)data[k]=FS_JSONKEYS.includes(k)?JSON.stringify(v):v}
+ for(const k of SYNC_KEYS){const v=await stGet(k);if(v!=null)data[k]=(FS_JSONKEYS.includes(k)&&typeof v!=='string')?JSON.stringify(v):v}
  for(let i=0;i<DAYS.length;i++){const v=await stGet('j26_diario_'+i);if(v)data['j26_diario_'+i]=v}
  for(const id of Object.keys(P)){const v=await stGet('j26_pnota_'+id);if(v)data['j26_pnota_'+id]=v}
  return data;}
@@ -3569,7 +3569,10 @@ async function mergeApply(data){
  let meaningful=false;
  for(const[k,v0]of Object.entries(data)){if(k.startsWith('_')||k.endsWith('_mt'))continue;
   let v=v0;
-  if(FS_JSONKEYS.includes(k)&&typeof v==='string'){try{v=JSON.parse(v);}catch(e){continue;}}
+  if(FS_JSONKEYS.includes(k)){
+   /* por si algún dispositivo viejo lo dejó codificado más de una vez, se deshace hasta que ya no sea texto */
+   let n=0;while(typeof v==='string'&&n<5){try{v=JSON.parse(v);}catch(e){break;}n++;}
+   if(typeof v==='string')continue;}
   const mine=await stGet(k);
   if(k==='j26_vis'||k==='j26_fav'||k==='j26_todos'){
    const before=JSON.stringify(mine||{});
@@ -4411,6 +4414,7 @@ setTimeout(paintLug,1200);
 <script>
 /* ══ v42: añadir/eliminar pendientes en la pantalla de Pendientes (los propios y también los predefinidos) ══ */
 (function(){
+if(!SYNC_KEYS.includes('j26_pendu'))SYNC_KEYS.push('j26_pendu');
 let PENDU=[];
 let PHIDE=null;               /* ids de pendientes predefinidos ocultados por el usuario */
 /* pendientes predefinidos ocultados por defecto la 1ª vez */
