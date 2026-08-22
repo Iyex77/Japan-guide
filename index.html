@@ -1633,7 +1633,7 @@ paintStatic=function(){const rc=document.getElementById('reservascard');rc&&rc.r
    m.classList.add('on');};}})();
 /* [A] MIS DATOS libres */
 function mdHTML(compact){if(!MD||!MD.length)return compact?'':'<p class="hint">Añade lo que necesites: localizadores, reservas, PINs, póliza, tarjeta de metro… Lo que tú uses.</p>';
- return '<div class="datos" style="box-shadow:none;background:'+(compact?'rgba(255,255,255,.6)':'var(--bg)')+';border-radius:14px">'+MD.map((e,i)=>
+ return '<div class="datos" style="box-shadow:none;background:'+(compact?'var(--soft)':'var(--bg)')+';border-radius:14px">'+MD.map((e,i)=>
  '<div class="mdrow" style="padding:8px 12px"><span class="l">'+esc(e.l)+'</span><span class="v">'+esc(e.v)+'</span>'
  +'<button onclick="mdCopy('+i+',this)">Copiar</button>'+(compact?'':'<button class="x" onclick="mdDel('+i+')">✕</button>')+'</div>').join('')+'</div>';}
 async function mdCopy(i,btn){try{await navigator.clipboard.writeText(MD[i].v);const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,1200)}catch(e){prompt('Copia el valor:',MD[i].v)}}
