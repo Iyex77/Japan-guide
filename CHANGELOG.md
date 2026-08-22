@@ -21,6 +21,7 @@ Para ver qué cambió exactamente en un commit: `git show <hash>`.
 
 | Fecha | Commit | Qué cambia |
 |---|---|---|
+| 2026-08-22 | `88ded1e` | Arregla que las actividades del día (doblemente codificadas por un dispositivo con código antiguo) rompieran la navegación por días; añade los pendientes propios (`j26_pendu`) a la sincronización, antes se borraban solos |
 | 2026-08-22 | `dae8735` | Arregla bucle de recargas en la sincronización (comparaba objetos reordenados como si hubieran cambiado) y arregla que las actividades por día y los pendientes propios nunca llegaran a la sala (Firestore no admite listas dentro de listas; ahora se codifican como JSON) |
 | 2026-08-22 | `47a50dd` | Borra info personal para poder publicar la app: hoteles reales (nombre/dirección/teléfono) pasan a placeholders editables vía ✏️ Editar (se sincronizan por tu sala, no van en el código); quita fecha de póliza y una mención de nombre de un comentario |
 | 2026-08-22 | `327d4ac` | Formulario visual también en las URLs de foto y el nombre del saludo (antes prompt()) |
