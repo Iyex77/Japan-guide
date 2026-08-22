@@ -816,6 +816,8 @@ function openHoteles(){$('#sheetInner').innerHTML=`<button class="back" onclick=
  <div class="phero" style="background:linear-gradient(140deg,#c2455e,#ef91a5)"><div class="k">🛏️</div><div class="pre">5 ALOJAMIENTOS</div><h2>Hoteles</h2><div class="loc">Enseña la dirección japonesa al taxista</div></div>
  ${HOTELES.map(h=>`<div class="card"><b style="font-family:'Baloo 2';font-size:16px">${h[0]}</b> <span class="tag" style="margin-left:4px">${h[1]}</span>
   <div class="hotel" style="border:none;padding:6px 0 0"><div class="dir">${h[2]}</div>${h[3]?`<div class="dirjp">${h[3]}</div>`:''}<div class="meta">${h[4]}</div></div>
+  ${h[6]?`<div class="mdrow" style="padding:8px 0 0"><span class="l">Confirmación</span><span class="v">${esc(h[6])}</span><button onclick="cp('${esc(h[6])}',this)">Copiar</button></div>`:''}
+  ${h[7]?`<div class="mdrow" style="padding:8px 0 0"><span class="l">PIN</span><span class="v">${esc(h[7])}</span><button onclick="cp('${esc(h[7])}',this)">Copiar</button></div>`:''}
   <div class="btnrow"><a class="btn g mini" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h[5])}">📍 Maps</a></div></div>`).join('')}`;
  $('#sheet').classList.add('on');$('#sheet').scrollTop=0;}
 /* ══════ MOTOR ══════ */
@@ -1605,7 +1607,7 @@ async function syncImport(merge){
    [A] Mis datos libres (etiqueta→valor)   [B] Vuelos editables
    [C] Reordenar días + editar actividades [D] limpieza sistema anterior */
 let MD=null,FLY=null,ORD=null,ACTS=null,NOMBRE='';
-SYNC_KEYS.push('j26_misdatos','j26_vuelos','j26_ord','j26_acts','j26_nombre');
+SYNC_KEYS.push('j26_misdatos','j26_misdatos_mt','j26_vuelos','j26_ord','j26_acts','j26_nombre');
 Object.defineProperty(window,'ORD',{get:()=>ORD,set:v=>{ORD=v},configurable:true});
 function fpos(p){const d=new Date(2026,8,13+p);
  const wd=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][d.getDay()];
@@ -1632,22 +1634,28 @@ paintStatic=function(){const rc=document.getElementById('reservascard');rc&&rc.r
     m.classList.remove('on');paintStatic();};
    m.classList.add('on');};}})();
 /* [A] MIS DATOS libres */
+function mdId(){return 'm_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function mdNorm(list){(list||[]).forEach(e=>{if(e&&!e.id)e.id=mdId();});return list;}
+async function mdTouch(id){const mt=await stGet('j26_misdatos_mt')||{};mt[id]=Date.now();await stSet('j26_misdatos_mt',mt);}
 function mdHTML(compact){if(!MD||!MD.length)return compact?'':'<p class="hint">Añade lo que necesites: localizadores, reservas, PINs, póliza, tarjeta de metro… Lo que tú uses.</p>';
- return '<div class="datos" style="box-shadow:none;background:'+(compact?'var(--soft)':'var(--bg)')+';border-radius:14px">'+MD.map((e,i)=>
+ return '<div class="datos" style="box-shadow:none;background:'+(compact?'var(--soft)':'var(--bg)')+';border-radius:14px">'+MD.map(e=>
  '<div class="mdrow" style="padding:8px 12px"><span class="l">'+esc(e.l)+'</span><span class="v">'+esc(e.v)+'</span>'
- +'<button onclick="mdCopy('+i+',this)">Copiar</button>'+(compact?'':'<button class="x" onclick="mdDel('+i+')">✕</button>')+'</div>').join('')+'</div>';}
-async function mdCopy(i,btn){try{await navigator.clipboard.writeText(MD[i].v);const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,1200)}catch(e){prompt('Copia el valor:',MD[i].v)}}
-async function mdDel(i){MD.splice(i,1);await stSet('j26_misdatos',MD);paintMD();}
+ +'<button onclick="mdCopy(\''+e.id+'\',this)">Copiar</button>'+(compact?'':'<button class="x" onclick="mdDel(\''+e.id+'\')">✕</button>')+'</div>').join('')+'</div>';}
+async function mdCopy(id,btn){const e=(MD||[]).find(x=>x.id===id);if(!e)return;
+ try{await navigator.clipboard.writeText(e.v);const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,1200)}catch(err){prompt('Copia el valor:',e.v)}}
+async function mdDel(id){
+ if(!confirm('¿Borrar este dato? Es sensible y se borrará también en los demás dispositivos de la sala.'))return;
+ MD=(MD||[]).filter(e=>e.id!==id);await stSet('j26_misdatos',MD);await mdTouch(id);paintMD();}
 function paintMD(){const host=document.getElementById('mdlist');if(host)host.innerHTML=mdHTML(false);}
 (function(){const mv=document.getElementById('tab-mv');if(!mv)return;
  const c=document.createElement('div');c.className='card';c.id='mdcard';
- c.innerHTML='<h3>🔒 Mis datos privados</h3><p class="hint" style="margin-bottom:10px">Formato libre — cada viajero guarda lo suyo, solo en su móvil. Aparecen también dentro de Vuelos, Seguro y Hoteles para tenerlos a mano.</p>'
+ c.innerHTML='<h3>🔒 Mis datos privados</h3><p class="hint" style="margin-bottom:10px">Formato libre — se sincroniza con la sala. Aparecen también dentro de Seguro para tenerlos a mano.</p>'
  +'<div id="mdlist"></div>'
  +'<div class="gform" style="margin-top:11px"><div class="dos"><input id="md_l" placeholder="Etiqueta (ej: Reserva hotel Kioto)"><input id="md_v" placeholder="Valor"></div>'
  +'<button class="btn" id="md_add" style="width:100%">Añadir dato</button></div>';
  mv.insertBefore(c,mv.children[1]);
  c.querySelector('#md_add').onclick=async()=>{const l=c.querySelector('#md_l').value.trim(),v=c.querySelector('#md_v').value.trim();
-  if(!l||!v){hap(30);return}MD=MD||[];MD.push({l,v});await stSet('j26_misdatos',MD);
+  if(!l||!v){hap(30);return}MD=MD||[];const id=mdId();MD.push({id,l,v});await stSet('j26_misdatos',MD);await mdTouch(id);
   c.querySelector('#md_l').value='';c.querySelector('#md_v').value='';hap(12);paintMD();};})();
 function injectMD(){const host=document.getElementById('sheetInner');if(!host||!MD||!MD.length)return;
  const blk=document.createElement('div');blk.className='blk';
@@ -1763,6 +1771,8 @@ window.renderDiario=async function(){const host=document.getElementById('diariol
    Object.entries(M).forEach(([k,l])=>{if(old[k]&&(''+old[k]).trim())MD.push({l,v:(''+old[k]).trim()})});
    if(old.nombre&&!NOMBRE){NOMBRE=old.nombre.trim();await stSet('j26_nombre',NOMBRE)}}
   await stSet('j26_misdatos',MD);}
+ /* datos ya guardados de antes del borrado sincronizado: necesitan un id estable */
+ {const before=JSON.stringify(MD);mdNorm(MD);if(JSON.stringify(MD)!==before)await stSet('j26_misdatos',MD);}
  paintMD();paintStatic();renderDias();renderDiario();
 })();
 </script>
@@ -3473,7 +3483,8 @@ const ORIG_HOTELES=HOTELES.map(h=>h.slice());
 function applyHedit(){HOTELES.forEach((h,i)=>{const e=HEDIT[i];if(!e)return;
  h[0]=e.n||ORIG_HOTELES[i][0];h[1]=e.tag||ORIG_HOTELES[i][1];
  h[2]=e.dir||ORIG_HOTELES[i][2];h[3]=(e.dirjp!==undefined?e.dirjp:ORIG_HOTELES[i][3])||null;
- h[4]=e.meta||ORIG_HOTELES[i][4];h[5]=e.n||ORIG_HOTELES[i][5];});}
+ h[4]=e.meta||ORIG_HOTELES[i][4];h[5]=e.n||ORIG_HOTELES[i][5];
+ h[6]=e.conf||ORIG_HOTELES[i][6]||'';h[7]=e.pin||ORIG_HOTELES[i][7]||'';});}
 function refreshHomeHotel(){const nc=document.getElementById('nochecard');if(!nc)return;
  const now=new Date();
  if(now<START){
@@ -3507,11 +3518,13 @@ window.openHoteles=function(){_ohV30();
     +'<label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Direcci\u00f3n</label><input id="he_dir" value="'+esc(h[2]||'')+'">'
     +'<label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Direcci\u00f3n en japon\u00e9s (opcional)</label><input id="he_dirjp" value="'+esc(h[3]||'')+'">'
     +'<label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Nota</label><input id="he_meta" value="'+esc(h[4]||'')+'">'
+    +'<div class="dos"><div><label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">Nº de confirmación</label><input id="he_conf" value="'+esc(h[6]||'')+'"></div>'
+    +'<div><label style="display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px">PIN</label><input id="he_pin" value="'+esc(h[7]||'')+'"></div></div>'
     +'<button class="btn" id="he_save" style="width:100%;margin-top:11px">Guardar</button>';
    eb.after(f);
    f.querySelector('#he_save').onclick=async()=>{
     const g=id=>f.querySelector('#'+id).value.trim();
-    HEDIT[i]={n:g('he_n'),tag:g('he_tag'),dir:g('he_dir'),dirjp:g('he_dirjp'),meta:g('he_meta')};
+    HEDIT[i]={n:g('he_n'),tag:g('he_tag'),dir:g('he_dir'),dirjp:g('he_dirjp'),meta:g('he_meta'),conf:g('he_conf'),pin:g('he_pin')};
     await stSet('j26_hedit',HEDIT);applyHedit();refreshHomeHotel();hap(15);
     openHoteles();};};
   rb.onclick=async()=>{if(!HEDIT[i])return;
@@ -3567,6 +3580,19 @@ async function mergeToggleMap(k,v,mine,remoteMT){
  ids.forEach(id=>{const rmt=remoteMT[id]||0,lmt=localMT[id]||0;
   if(rmt>lmt){if(v&&v[id])out[id]=true;else delete out[id];outMT[id]=rmt;}});
  await stSetLocal(k,out);await stSetLocal(mtKey,outMT);}
+/* igual que mergeToggleMap pero para listas con contenido real (Mis datos): cada
+   entrada lleva su id, y quien la tocó más tarde (añadiéndola o borrándola) gana
+   en los dos dispositivos — así un borrado sí se propaga, no solo las altas */
+async function mergeContentList(k,list,mine,remoteMT){
+ const mtKey=k+'_mt';remoteMT=remoteMT||{};
+ const localMT=await stGet(mtKey)||{};
+ const mineMap={};(mine||[]).forEach(e=>{if(e&&e.id)mineMap[e.id]=e;});
+ const remMap={};mdNorm(list||[]).forEach(e=>{if(e&&e.id)remMap[e.id]=e;});
+ const outMap=Object.assign({},mineMap);const outMT=Object.assign({},localMT);
+ const ids=new Set([...Object.keys(remoteMT),...Object.keys(remMap)]);
+ ids.forEach(id=>{const rmt=remoteMT[id]||0,lmt=localMT[id]||0;
+  if(rmt>lmt){if(remMap[id])outMap[id]=remMap[id];else delete outMap[id];outMT[id]=rmt;}});
+ await stSetLocal(k,Object.values(outMap));await stSetLocal(mtKey,outMT);}
 /* devuelve true si de verdad cambió algo que importe mostrar: las fotos NO
    cuentan (se repintan solas más abajo), así no hace falta recargar por ellas */
 async function mergeApply(data){
@@ -3583,6 +3609,11 @@ async function mergeApply(data){
    await mergeToggleMap(k,v,mine||{},data[k+'_mt']||{});
    if(JSON.stringify(await stGet(k))!==before)meaningful=true;
    continue}
+  if(k==='j26_misdatos'){
+   const before=JSON.stringify(mine||[]);
+   await mergeContentList(k,v,mine||[],data[k+'_mt']||{});
+   if(JSON.stringify(await stGet(k))!==before)meaningful=true;
+   continue}
   if(k==='j26_fotourls'){
    /* cada móvil pesca su foto de Wikipedia por su cuenta y nunca se corrige sola:
       así los dos acaban viendo fotos distintas para el mismo sitio. Aquí, quien
@@ -3596,10 +3627,6 @@ async function mergeApply(data){
    if(JSON.stringify(out)!==JSON.stringify(mine))meaningful=true;await stSetLocal(k,out)}
   else if(k==='j26_custom'){const out={places:Object.assign({},(v||{}).places,(mine||{}).places),imgs:Object.assign({},(v||{}).imgs,(mine||{}).imgs)};
    if(JSON.stringify(out)!==JSON.stringify(mine))meaningful=true;await stSetLocal(k,out)}
-  else if(Array.isArray(v)&&Array.isArray(mine)&&v.every(e=>e&&typeof e==='object'&&'l'in e)){
-   /* listas tipo "Mis datos" ({l,v}): a\u00f1ade entradas remotas cuya etiqueta no exista ya en local */
-   const haveL=new Set(mine.map(e=>e&&e.l));const add=v.filter(e=>e&&!haveL.has(e.l));
-   if(add.length){meaningful=true;await stSetLocal(k,mine.concat(add))}}
   else if(typeof v==='object'&&v&&typeof mine==='object'&&mine&&JSON.stringify(v)!==JSON.stringify(mine)){
    /* resto de mapas/listas (hoteles editados, actividades por d\u00eda, metadatos de d\u00eda...):
       el \u00faltimo cambio remoto sustituye entero \u2014 sin esto, comparar reordenando claves
