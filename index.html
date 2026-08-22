@@ -1750,7 +1750,12 @@ window.renderDiario=async function(){const host=document.getElementById('diariol
 /* init v9 */
 (async()=>{
  MD=await stGet('j26_misdatos');FLY=await stGet('j26_vuelos')||{};
- ORD=await stGet('j26_ord')||DAYS.map((_,i)=>i);ACTS=await stGet('j26_acts')||{};
+ ORD=await stGet('j26_ord')||DAYS.map((_,i)=>i);
+ /* por si un dispositivo viejo dejó las actividades guardadas como texto (doble JSON):
+    se deshace al cargar, así se autorepara sin depender de que llegue sincro nueva */
+ ACTS=await stGet('j26_acts')||{};
+ {let n=0;while(typeof ACTS==='string'&&n<5){try{ACTS=JSON.parse(ACTS);}catch(e){ACTS={};break;}n++;}
+  if(typeof ACTS!=='object'||ACTS===null)ACTS={};}
  NOMBRE=await stGet('j26_nombre')||'';
  /* migración desde el sistema antiguo de campos fijos */
  if(MD===null){MD=[];const old=await stGet('j26_priv');
@@ -4421,6 +4426,8 @@ let PHIDE=null;               /* ids de pendientes predefinidos ocultados por el
 const DEFAULT_HIDE=['fuji','ebihachi','unito','takky','disney','nikkotobu'];
 (async()=>{
  try{PENDU=await stGet('j26_pendu')||[];}catch(e){PENDU=[];}
+ {let n=0;while(typeof PENDU==='string'&&n<5){try{PENDU=JSON.parse(PENDU);}catch(e){PENDU=[];break;}n++;}
+  if(!Array.isArray(PENDU))PENDU=[];}
  try{PHIDE=await stGet('j26_pendhide');}catch(e){PHIDE=null;}
  if(PHIDE===null||PHIDE===undefined){PHIDE=DEFAULT_HIDE.slice();await stSet('j26_pendhide',PHIDE);}
  syncInto();
