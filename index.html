@@ -1770,12 +1770,25 @@ openDay=function(pos){_odV10(pos);
   b.title='Cambiar título, zona y etiquetas';b.onclick=()=>editDayMeta(pos);bar.appendChild(b);
   const r=document.createElement('button');r.className='pillb';r.textContent='↺ Original';
   r.onclick=()=>restoreDay(pos);bar.appendChild(r);}};
-async function editDayMeta(pos){const o=(ORD||[])[pos]??pos;const d=dayData(pos);
- const t=prompt('Título del día:',d.t);if(t===null)return;
- const city=prompt('Ciudad / zona:',d.city);if(city===null)return;
- const tags=prompt('Etiquetas (separadas por comas):',(d.tags||[]).join(', '));if(tags===null)return;
- DMETA=DMETA||{};DMETA[o]={t:t.trim()||d.t,city:city.trim()||d.city,tags:tags.split(',').map(x=>x.trim()).filter(Boolean)};
- await stSet('j26_dmeta',DMETA);renderDias();openDay(pos);}
+function editDayMeta(pos){const o=(ORD||[])[pos]??pos;const d=dayData(pos);
+ const m=window.actModalEl();if(!m)return;
+ m.innerHTML='<div class="card"><h3>📝 Editar día</h3><div class="gform">'
+ +'<input id="dm_t" placeholder="Título del día">'
+ +'<input id="dm_city" placeholder="Ciudad / zona">'
+ +'<input id="dm_tags" placeholder="Etiquetas separadas por comas">'
+ +'<div class="rowbtns"><button type="button" class="btn g" id="dm_cancel">Cancelar</button><button type="button" class="btn" id="dm_save">Guardar</button></div>'
+ +'</div></div>';
+ m.querySelector('#dm_t').value=d.t||'';
+ m.querySelector('#dm_city').value=d.city||'';
+ m.querySelector('#dm_tags').value=(d.tags||[]).join(', ');
+ m.querySelector('#dm_cancel').onclick=()=>m.classList.remove('on');
+ m.querySelector('#dm_save').onclick=async()=>{
+  const t=m.querySelector('#dm_t').value.trim()||d.t;
+  const city=m.querySelector('#dm_city').value.trim()||d.city;
+  const tags=m.querySelector('#dm_tags').value.split(',').map(x=>x.trim()).filter(Boolean);
+  DMETA=DMETA||{};DMETA[o]={t,city,tags};
+  await stSet('j26_dmeta',DMETA);m.classList.remove('on');renderDias();openDay(pos);};
+ m.classList.add('on');}
 async function restoreDay(pos){
  if(!confirm('¿Restaurar este día a la versión original de la guía? Se pierden tus cambios de título y actividades (el diario se conserva).'))return;
  const o=(ORD||[])[pos]??pos;
@@ -1839,18 +1852,6 @@ openDay=function(pos){_odV11(pos);
   b.title='Mover a otro d\u00eda';
   b.onclick=()=>actMoveDay(pos,ai);
   row.insertBefore(b,row.lastElementChild);});};
-async function actMoveDay(pos,ai){
- const nd=prompt('\u00bfA qu\u00e9 d\u00eda lo muevo? (1\u2013'+DAYS.length+')','');
- if(nd===null)return;
- const tp=parseInt(nd,10)-1;
- if(isNaN(tp)||tp<0||tp>=DAYS.length){alert('Pon un n\u00famero de d\u00eda entre 1 y '+DAYS.length+'.');return}
- if(tp===pos)return;
- const from=await actsOf(pos),to=await actsOf(tp);
- const item=from.splice(ai,1)[0];
- to.push(item);
- await stSet('j26_acts',ACTS);hap(15);
- if(confirm('\u00ab'+item[1]+'\u00bb movida al d\u00eda '+(tp+1)+' ('+fpos(tp)+'), al final de sus actividades. \u00bfAbrir ese d\u00eda para colocarla en su hora?'))openDay(tp);
- else openDay(pos);}
 </script>
 <style>
 .movermodal{position:fixed;inset:0;background:rgba(20,25,50,.45);z-index:90;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
@@ -2203,12 +2204,20 @@ renderDias=function(){const r=document.getElementById('dias');if(!r)return;r.inn
    const nd={f:'',city:'—',t:'Día nuevo',tags:['Añadido'],a:[]};
    JXD.push(nd);DAYS.push(nd);ORD.push(DAYS.length-1);
    await stSet('j26_xdays',JXD);await stSet('j26_ord',ORD);hap(12);renderDias();refreshHero();};
-  bar.querySelector('#setStart').onclick=async()=>{
-   const v=prompt('Fecha del día 1 del viaje (AAAA-MM-DD):',JSTART);
-   if(v===null)return;
-   if(!/^\d{4}-\d{2}-\d{2}$/.test(v.trim())||isNaN(new Date(v.trim()).getTime())){alert('Formato: AAAA-MM-DD, por ejemplo 2027-04-02');return}
-   JSTART=v.trim();await stSet('j26_start',JSTART);hap(12);renderDias();refreshHero();
-   if(window.renderDiario)renderDiario();};}
+  bar.querySelector('#setStart').onclick=()=>{
+   const m=window.actModalEl?window.actModalEl():null;
+   if(!m){const v=prompt('Fecha del día 1 del viaje (AAAA-MM-DD):',JSTART);if(v===null)return;JSTART=v.trim();stSet('j26_start',JSTART);renderDias();return;}
+   m.innerHTML='<div class="card"><h3>📅 Fecha de inicio del viaje</h3><div class="gform">'
+   +'<input type="date" id="st_date">'
+   +'<div class="rowbtns"><button type="button" class="btn g" id="st_cancel">Cancelar</button><button type="button" class="btn" id="st_save">Guardar</button></div>'
+   +'</div></div>';
+   m.querySelector('#st_date').value=JSTART;
+   m.querySelector('#st_cancel').onclick=()=>m.classList.remove('on');
+   m.querySelector('#st_save').onclick=async()=>{
+    const v=m.querySelector('#st_date').value;if(!v)return;
+    JSTART=v;await stSet('j26_start',JSTART);hap(12);m.classList.remove('on');renderDias();refreshHero();
+    if(window.renderDiario)renderDiario();};
+   m.classList.add('on');};}
  for(let pos=0;pos<nDays();pos++){const d=dayData(pos);
   const el=document.createElement('div');el.className='dcard';
   el.innerHTML='<div class="dnum"><b>'+(pos+1)+'</b><small>'+fpos(pos).split(' · ')[0]+'</small></div>'
@@ -3905,6 +3914,7 @@ function actModalEl(){
   m.onclick=e=>{if(e.target===m)m.classList.remove('on');};
   document.body.appendChild(m);}
  return m;}
+window.actModalEl=actModalEl; /* reutilizable desde otros formularios (editar día, mover actividad, fecha inicio) */
 async function openActForm(pos,ai){
  const arr=await actsOf(pos);
  const editing=(typeof ai==='number');
