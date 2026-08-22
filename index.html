@@ -1477,12 +1477,24 @@ openPlace=function(id){_opE(id);
  const row=host.querySelector('.rowbtns');
  if(row&&!host.querySelector('#chfoto')){
   const b=document.createElement('button');b.className='pillb';b.id='chfoto';b.textContent='🖼 Foto';
-  b.onclick=async()=>{const cur=(PC.imgs&&PC.imgs[id])||'';
-   const u=prompt('Pega la URL de la imagen para este lugar (vacío = volver a la automática):',cur);
-   if(u===null)return;PC.imgs=PC.imgs||{};
-   if(u.trim())PC.imgs[id]=u.trim();else delete PC.imgs[id];
-   await pcSave();openPlace(id);
-   try{if(typeof renderLug==='function')renderLug();}catch(e){}};
+  b.onclick=()=>{const cur=(PC.imgs&&PC.imgs[id])||'';
+   const m=window.actModalEl?window.actModalEl():null;
+   if(!m){const u=prompt('Pega la URL de la imagen (vacío = quitar):',cur);if(u===null)return;
+    PC.imgs=PC.imgs||{};if(u.trim())PC.imgs[id]=u.trim();else delete PC.imgs[id];
+    pcSave().then(()=>{openPlace(id);try{renderLug();}catch(e){}});return;}
+   m.innerHTML='<div class="card"><h3>🖼 Foto de este lugar</h3><div class="gform">'
+   +'<input id="ph_url" placeholder="URL de la imagen (https://…)">'
+   +'<p class="hint" style="margin:-4px 0 8px">Déjalo vacío y guarda para volver a la foto automática.</p>'
+   +'<div class="rowbtns"><button type="button" class="btn g" id="ph_cancel">Cancelar</button><button type="button" class="btn" id="ph_save">Guardar</button></div>'
+   +'</div></div>';
+   m.querySelector('#ph_url').value=cur;
+   m.querySelector('#ph_cancel').onclick=()=>m.classList.remove('on');
+   m.querySelector('#ph_save').onclick=async()=>{
+    const u=m.querySelector('#ph_url').value.trim();
+    PC.imgs=PC.imgs||{};if(u)PC.imgs[id]=u;else delete PC.imgs[id];
+    await pcSave();m.classList.remove('on');openPlace(id);
+    try{if(typeof renderLug==='function')renderLug();}catch(e){}};
+   m.classList.add('on');};
   row.appendChild(b);}
 };
 /* loadFoto con prioridad a foto personalizada */
@@ -1606,8 +1618,19 @@ paintStatic=function(){const rc=document.getElementById('reservascard');rc&&rc.r
 (function(){const pf=document.getElementById('privform');pf&&pf.closest('.card').remove();
  const h1=document.querySelector('.saludo h1');
  if(h1){h1.style.cursor='pointer';h1.title='Toca para poner tu nombre';
-  h1.onclick=async()=>{const n=prompt('¿Cómo te llamas? (para el saludo)',NOMBRE||'');
-   if(n===null)return;NOMBRE=n.trim();await stSet('j26_nombre',NOMBRE);paintStatic();};}})();
+  h1.onclick=()=>{const m=window.actModalEl?window.actModalEl():null;
+   if(!m){const n=prompt('¿Cómo te llamas? (para el saludo)',NOMBRE||'');if(n===null)return;
+    NOMBRE=n.trim();stSet('j26_nombre',NOMBRE);paintStatic();return;}
+   m.innerHTML='<div class="card"><h3>👋 ¿Cómo te llamas?</h3><div class="gform">'
+   +'<input id="nm_val" placeholder="Tu nombre">'
+   +'<div class="rowbtns"><button type="button" class="btn g" id="nm_cancel">Cancelar</button><button type="button" class="btn" id="nm_save">Guardar</button></div>'
+   +'</div></div>';
+   m.querySelector('#nm_val').value=NOMBRE||'';
+   m.querySelector('#nm_cancel').onclick=()=>m.classList.remove('on');
+   m.querySelector('#nm_save').onclick=async()=>{
+    NOMBRE=m.querySelector('#nm_val').value.trim();await stSet('j26_nombre',NOMBRE);
+    m.classList.remove('on');paintStatic();};
+   m.classList.add('on');};}})();
 /* [A] MIS DATOS libres */
 function mdHTML(compact){if(!MD||!MD.length)return compact?'':'<p class="hint">Añade lo que necesites: localizadores, reservas, PINs, póliza, tarjeta de metro… Lo que tú uses.</p>';
  return '<div class="datos" style="box-shadow:none;background:'+(compact?'rgba(255,255,255,.6)':'var(--bg)')+';border-radius:14px">'+MD.map((e,i)=>
@@ -1714,16 +1737,10 @@ async function actsOf(pos){const o=(ORD||[])[pos]??pos;ACTS=ACTS||{};
 async function actMove(pos,ai,m){const arr=await actsOf(pos);const j=ai+m;if(j<0||j>=arr.length)return;
  [arr[ai],arr[j]]=[arr[j],arr[ai]];await stSet('j26_acts',ACTS);openDay(pos);}
 async function actDel(pos,ai){const arr=await actsOf(pos);arr.splice(ai,1);await stSet('j26_acts',ACTS);openDay(pos);}
-async function actEdit(pos,ai){const arr=await actsOf(pos);
- const h=prompt('Hora / etiqueta:',arr[ai][0]);if(h===null)return;
- const t=prompt('Actividad:',arr[ai][1]);if(t===null)return;
- const n=prompt('Nota (opcional):',arr[ai][2]||'');if(n===null)return;
- arr[ai]=[h.trim(),t.trim(),n.trim()||null,arr[ai][3]||null];
- await stSet('j26_acts',ACTS);openDay(pos);}
-async function actAdd(pos){const arr=await actsOf(pos);
- const h=prompt('Hora / etiqueta (ej: 16:30):','');if(h===null)return;
- const t=prompt('Actividad:','');if(t===null||!t.trim())return;
- arr.push([h.trim()||'—',t.trim(),null,null]);await stSet('j26_acts',ACTS);openDay(pos);}
+/* actEdit/actAdd reales: formulario visual, definido más abajo (v37) y que
+   sobrescribe estos nombres — se dejan como placeholders sin más */
+function actEdit(){}
+function actAdd(){}
 /* dayOf y diario índice con ORD */
 dayOf=function(id){for(let pos=0;pos<DAYS.length;pos++){if(dayActs(pos).some(a=>a[3]===id)){openDay(pos);return}}};
 window.renderDiario=async function(){const host=document.getElementById('diariolist');if(!host)return;
@@ -4073,15 +4090,24 @@ window.openFoodByName=function(kind,city,name){
  const row=host.querySelector('.btnrow');
  if(row&&!host.querySelector('#ffotobtn')){
   const b=document.createElement('button');b.className='pillb';b.id='ffotobtn';b.style.marginTop='10px';b.textContent='🖼 Foto';
-  b.onclick=async()=>{
+  b.onclick=()=>{
    const cur=(PC.imgs||{})[key]||'';
-   const u=prompt('Pega la URL de la imagen para este sitio (vacío = quitar foto):',cur);
-   if(u===null)return;
-   PC.imgs=PC.imgs||{};
-   if(u.trim())PC.imgs[key]=u.trim();else delete PC.imgs[key];
-   await pcSave();
-   const img=host.querySelector('#ffoto');
-   if(img){if(u.trim()){img.src=u.trim();img.style.display='block';}else{img.removeAttribute('src');img.style.display='none';}}};
+   const m=window.actModalEl?window.actModalEl():null;
+   const apply=async(u)=>{PC.imgs=PC.imgs||{};if(u)PC.imgs[key]=u;else delete PC.imgs[key];
+    await pcSave();
+    const img=host.querySelector('#ffoto');
+    if(img){if(u){img.src=u;img.style.display='block';}else{img.removeAttribute('src');img.style.display='none';}}};
+   if(!m){const u=prompt('Pega la URL de la imagen (vacío = quitar foto):',cur);if(u===null)return;apply(u.trim());return;}
+   m.innerHTML='<div class="card"><h3>🖼 Foto de este sitio</h3><div class="gform">'
+   +'<input id="ph_url" placeholder="URL de la imagen (https://…)">'
+   +'<p class="hint" style="margin:-4px 0 8px">Déjalo vacío y guarda para quitar la foto.</p>'
+   +'<div class="rowbtns"><button type="button" class="btn g" id="ph_cancel">Cancelar</button><button type="button" class="btn" id="ph_save">Guardar</button></div>'
+   +'</div></div>';
+   m.querySelector('#ph_url').value=cur;
+   m.querySelector('#ph_cancel').onclick=()=>m.classList.remove('on');
+   m.querySelector('#ph_save').onclick=async()=>{
+    await apply(m.querySelector('#ph_url').value.trim());m.classList.remove('on');};
+   m.classList.add('on');};
   row.parentElement.insertBefore(b,row.nextSibling);}};
 
 /* 2) selector de Comer/Cenar cercano por zona */
