@@ -3539,9 +3539,13 @@ async function ensureFirebase(){if(fbReady)return;
  db=firebase.firestore();
  try{await db.enablePersistence({synchronizeTabs:true})}catch(e){}
  fbReady=true;}
+/* Firestore no admite arrays dentro de arrays (p.ej. actividades = [[hora,texto,...],...]):
+   sin esto, el .set() fallaba en silencio (try/catch vacío más abajo) y estas claves
+   nunca llegaban a la sala. Se guardan como texto JSON y se deshacen al recibir. */
+const FS_JSONKEYS=['j26_acts','j26_pendu'];
 async function buildExportData(){
  const data={_v:1,_fecha:new Date().toISOString(),_origin:SELF_ID};
- for(const k of SYNC_KEYS){const v=await stGet(k);if(v!=null)data[k]=v}
+ for(const k of SYNC_KEYS){const v=await stGet(k);if(v!=null)data[k]=FS_JSONKEYS.includes(k)?JSON.stringify(v):v}
  for(let i=0;i<DAYS.length;i++){const v=await stGet('j26_diario_'+i);if(v)data['j26_diario_'+i]=v}
  for(const id of Object.keys(P)){const v=await stGet('j26_pnota_'+id);if(v)data['j26_pnota_'+id]=v}
  return data;}
@@ -3563,7 +3567,9 @@ async function mergeToggleMap(k,v,mine,remoteMT){
    cuentan (se repintan solas más abajo), así no hace falta recargar por ellas */
 async function mergeApply(data){
  let meaningful=false;
- for(const[k,v]of Object.entries(data)){if(k.startsWith('_')||k.endsWith('_mt'))continue;
+ for(const[k,v0]of Object.entries(data)){if(k.startsWith('_')||k.endsWith('_mt'))continue;
+  let v=v0;
+  if(FS_JSONKEYS.includes(k)&&typeof v==='string'){try{v=JSON.parse(v);}catch(e){continue;}}
   const mine=await stGet(k);
   if(k==='j26_vis'||k==='j26_fav'||k==='j26_todos'){
    const before=JSON.stringify(mine||{});
@@ -3583,6 +3589,16 @@ async function mergeApply(data){
    if(JSON.stringify(out)!==JSON.stringify(mine))meaningful=true;await stSetLocal(k,out)}
   else if(k==='j26_custom'){const out={places:Object.assign({},(v||{}).places,(mine||{}).places),imgs:Object.assign({},(v||{}).imgs,(mine||{}).imgs)};
    if(JSON.stringify(out)!==JSON.stringify(mine))meaningful=true;await stSetLocal(k,out)}
+  else if(Array.isArray(v)&&Array.isArray(mine)&&v.every(e=>e&&typeof e==='object'&&'l'in e)){
+   /* listas tipo "Mis datos" ({l,v}): a\u00f1ade entradas remotas cuya etiqueta no exista ya en local */
+   const haveL=new Set(mine.map(e=>e&&e.l));const add=v.filter(e=>e&&!haveL.has(e.l));
+   if(add.length){meaningful=true;await stSetLocal(k,mine.concat(add))}}
+  else if(typeof v==='object'&&v&&typeof mine==='object'&&mine&&JSON.stringify(v)!==JSON.stringify(mine)){
+   /* resto de mapas/listas (hoteles editados, actividades por d\u00eda, metadatos de d\u00eda...):
+      el \u00faltimo cambio remoto sustituye entero \u2014 sin esto, comparar reordenando claves
+      pod\u00eda marcar "cambi\u00f3 algo" en cada snapshot aunque el contenido fuera igual,
+      y eso met\u00eda a las dos sesiones en un bucle de recarga infinito */
+   meaningful=true;await stSetLocal(k,v)}
   else if(typeof v==='string'&&typeof mine==='string'&&mine.trim()&&v.trim()&&mine.trim()!==v.trim()){meaningful=true;await stSetLocal(k,mine+'\n\u2014 \u2014 \u2014\n'+v)}}
  return meaningful;}
 /* re-envolver stSet: si ya estaba envuelto por una v31 rota, esta capa manda porque se registra después */
