@@ -602,7 +602,7 @@ const DAYS=[
  {f:"13 sep · sábado",city:"Osaka",t:"Llegada a Japón",tags:["Vuelo","Llegada"],a:[
   ["12:40","Llegada a Kansai Airport","Migración + maletas; semáforo de energía de tu guía"],
   ["14:15","Nankai Rapi:t a Namba","El tren azul 'robot'; digital ¥1.410 opcional"],
-  ["15:30","Check-in Via Inn Prime",null],
+  ["15:30","Check-in en el hotel",null],
   ["19:00","Cena Namba / Dotonbori","Según energía; Daiso/BOOKOFF/ABC-MART si sobran fuerzas"]]},
  {f:"14 sep · domingo",city:"Osaka",t:"Sur de Osaka",tags:["Templos","Denden Town"],a:[
   ["09:15","Sumiyoshi Taisha",null,"sumiyoshi"],["11:00","Shitennō-ji",null,"shitennoji"],
@@ -624,8 +624,8 @@ const DAYS=[
   ["10:45","Tōdai-ji",null,"todaiji"],["12:00","Nara Park y ciervos",null,"narapark"],
   ["12:45","Comida sencilla en Nara","Udon, soba, curry o set lunch rápido cerca de la ruta; sin reservar"],
   ["14:00","Paseo final: Ukimido / Naramachi","Pabellón Ukimido sobre el estanque o callejeo por Naramachi según dónde estéis"],
-  ["15:00","Tren a Kyoto","Confirmar que las maletas han llegado al Stay SAKURA"],
-  ["17:30","Check-in Stay SAKURA Ryu",null]]},
+  ["15:00","Tren a Kyoto","Confirmar que las maletas han llegado al hotel"],
+  ["17:30","Check-in en el hotel",null]]},
  {f:"18 sep · jueves",city:"Kyoto",t:"Higashiyama, té y Gion",tags:["Templos","Ceremonia té"],a:[
   ["07:30","Ninenzaka / Sannenzaka","Las cuestas Edo antes de la marea","ninenzaka"],
   ["08:15","Kiyomizu-dera",null,"kiyomizu"],["09:45","Yasui Konpira-gū",null,"yasui"],
@@ -796,7 +796,7 @@ function openVuelos(){$('#sheetInner').innerHTML=`<button class="back" onclick="
  <div class="visita">⚠️ Si Air China cancela o cambia: guarda el email (prueba de los 14 días) y reclama por escrito reembolso, no bono. La ida está protegida por el reglamento europeo EC261.</div>`;
  $('#sheet').classList.add('on');$('#sheet').scrollTop=0;}
 function openSeguro(){$('#sheetInner').innerHTML=`<button class="back" onclick="closeSheet()">‹ Atrás</button>
- <div class="phero" style="background:linear-gradient(140deg,#2e7d4f,#63c58a)"><div class="k">🛡️</div><div class="pre">HEYMONDO</div><h2>Seguro de viaje</h2><div class="loc">Contratado el 23 abr 2026 · titular: </div></div>
+ <div class="phero" style="background:linear-gradient(140deg,#2e7d4f,#63c58a)"><div class="k">🛡️</div><div class="pre">HEYMONDO</div><h2>Seguro de viaje</h2><div class="loc">titular: </div></div>
  <div class="blk"><div class="lbl">🎫 Números importantes</div>
   <div class="copy"><div class="tx"><small>Nº de póliza</small><b></b></div><button onclick="cp('',this)">Copiar</button></div>
   <div class="copy"><div class="tx"><small>Asistencia 24 h en viaje</small><b>+34 913 536 323</b></div><button onclick="cp('+34913536323',this)">Copiar</button></div>
@@ -807,11 +807,11 @@ function openSeguro(){$('#sheetInner').innerHTML=`<button class="back" onclick="
  <div class="avisoseg">✓ Regla de oro: ante cualquier gasto médico o incidencia, contacta PRIMERO con Heymondo (app o teléfono) para que abran el parte y autoricen el gasto.</div>`;
  $('#sheet').classList.add('on');$('#sheet').scrollTop=0;}
 const HOTELES=[
- ["Via Inn Prime Shinsaibashi-Yotsubashi","Osaka · 13–17 sep","Shinsaibashi / Yotsubashi, Namba",null,"Recepción 24 h · Takkyubin de salida ✅ confirmado","Via Inn Prime Shinsaibashi Yotsubashi Osaka"],
- ["Stay SAKURA Kyoto Ryu 龍","Kyoto · 17–23 sep","Shimogyo-ku, Kakimotocho 595-123","京都市下京区柿本町595-123","Tel +81 50-2018-7885 · check-in 15:00–21:00 · GSC junto a Kyoto Station guarda equipaje 9–21 h","Stay Sakura Kyoto Ryu"],
- ["hotel around TAKAYAMA","Takayama · 23–25 sep","Hanaoka-cho 1-42-7","高山市花岡町1-42-7","Tel +81 577-36-2811 · 24 h","hotel around Takayama"],
- ["Tabist Kazeyuki","Hirayu Onsen · 25–26 sep","Okuhida Onsengo",null,"Solo mochila: las maletas viajan a Tokio por Takkyubin","Tabist Kazeyuki Hirayu Onsen"],
- ["HOTEL AMANEK Ginza East","Tokio · 26 sep–2 oct","2-4-13 Shintomi, Chuo-ku","東京都中央区新富2-4-13","Tel +81 3-5542-0404","Hotel Amanek Ginza East Tokyo"]];
+ ["Alojamiento por confirmar","Osaka · 13–17 sep","",null,"Rellénalo con ✏️ Editar (se guarda en tu sala)",""],
+ ["Alojamiento por confirmar","Kyoto · 17–23 sep","",null,"Rellénalo con ✏️ Editar (se guarda en tu sala)",""],
+ ["Alojamiento por confirmar","Takayama · 23–25 sep","",null,"Rellénalo con ✏️ Editar (se guarda en tu sala)",""],
+ ["Alojamiento por confirmar","Hirayu Onsen · 25–26 sep","",null,"Rellénalo con ✏️ Editar (se guarda en tu sala)",""],
+ ["Alojamiento por confirmar","Tokio · 26 sep–2 oct","",null,"Rellénalo con ✏️ Editar (se guarda en tu sala)",""]];
 function openHoteles(){$('#sheetInner').innerHTML=`<button class="back" onclick="closeSheet()">‹ Atrás</button>
  <div class="phero" style="background:linear-gradient(140deg,#c2455e,#ef91a5)"><div class="k">🛏️</div><div class="pre">5 ALOJAMIENTOS</div><h2>Hoteles</h2><div class="loc">Enseña la dirección japonesa al taxista</div></div>
  ${HOTELES.map(h=>`<div class="card"><b style="font-family:'Baloo 2';font-size:16px">${h[0]}</b> <span class="tag" style="margin-left:4px">${h[1]}</span>
@@ -2020,7 +2020,7 @@ renderDias();if(window.renderDiario)renderDiario();renderLug();
 DAYS[0].a=[
  ["12:40","Llegada a Kansai + migración","Al recoger maletas: evaluad el semáforo de energía de abajo"],
  ["14:15","Nankai Rapi:t a Namba","El tren azul; billete digital ¥1.410 opcional"],
- ["15:30","Check-in Via Inn Prime",null]];
+ ["15:30","Check-in en el hotel",null]];
 DAYS[18].t="1 oct: elige ruta — Bahía, Nikkō o DisneySea";
 DAYS[18].tags=["Selector de ruta arriba","Toyosu cierra jueves"];
 const DAYVARS={18:{sel:[["A","🌉 A · Bahía"],["B1","🐒 B · Nikkō"],["B2","🎢 B · DisneySea"]],
@@ -4397,7 +4397,7 @@ setTimeout(paintLug,1200);
 (function(){
 let PENDU=[];
 let PHIDE=null;               /* ids de pendientes predefinidos ocultados por el usuario */
-/* los que Sergio pidió borrar de la lista predefinida (por defecto, la 1ª vez) */
+/* pendientes predefinidos ocultados por defecto la 1ª vez */
 const DEFAULT_HIDE=['fuji','ebihachi','unito','takky','disney','nikkotobu'];
 (async()=>{
  try{PENDU=await stGet('j26_pendu')||[];}catch(e){PENDU=[];}
