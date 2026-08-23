@@ -876,7 +876,7 @@ function openPlace(id){const p=P[id];if(!p)return;
  <div class="sabias"><div class="lbl">✨ ¿Sabíais que…?</div><p>${esc(p.s)}</p></div>
  <div class="blk"><div class="lbl">✅ Consejos</div>${p.t.map(t=>`<div class="tip">${esc(t)}</div>`).join('')}</div>
  <div class="blk"><div class="lbl">ℹ️ Datos prácticos <span style="text-transform:none;letter-spacing:0;font-weight:600">(orientativo jul-2026)</span></div>
-  <div class="datos"><div class="row"><div class="k">Horario</div><div class="v">${esc(p.hor)}</div></div>
+  <div class="datos">${p.dir?`<div class="row"><div class="k">Dirección</div><div class="v">${esc(p.dir)}</div></div>`:''}<div class="row"><div class="k">Horario</div><div class="v">${esc(p.hor)}</div></div>
   <div class="row"><div class="k">Precio</div><div class="v">${esc(p.pre)}</div></div>
   ${p.gos?`<div class="row"><div class="k">Goshuin</div><div class="v gosh">${esc(p.gos)}</div></div>`:''}</div></div>
  <div class="visita">📅 Se visita: ${esc(p.dia)}</div>
@@ -897,7 +897,7 @@ function renderLug(){const q=($('#q').value||'').toLowerCase();const r=$('#lugar
   const h=document.createElement('div');h.className='cityh';
   h.innerHTML=`<span class="st">${CITY_IC[city]||'📍'}</span><b>${city}</b>`;r.appendChild(h);
   items.forEach(([id,p])=>{const el=document.createElement('div');el.className='pl';
-   const maps=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.n+' '+p.city+' Japan')}`;
+   const maps=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.dir?p.dir+', Japan':p.n+' '+p.city+' Japan')}`;
    el.innerHTML=`<div class="ki" style="background:${CAT_COL[p.cat]||'#3d5af1'}">${p.k}</div>
    <div class="tt"><b>${esc(p.n)}</b><small>${esc(p.cat)} · ${esc(p.dia)}${p.gos?' · 御朱印':''}</small></div>
    <div class="btns"><button class="info">ℹ Info</button><a class="maps" target="_blank" rel="noopener" href="${maps}">📍</a></div>`;
@@ -1101,7 +1101,7 @@ async function loadFoto(id){const img=document.getElementById('pfoto');if(!img)r
 /* 6) openPlace v2: foto + más info + Google/Apple Maps */
 const _openPlaceV3=openPlace;
 openPlace=function(id){const p=P[id];if(!p)return;
- const q=encodeURIComponent(p.n+' '+p.city+' Japan');
+ const q=encodeURIComponent(p.dir?p.dir+', Japan':p.n+' '+p.city+' Japan');
  const gm=`https://www.google.com/maps/search/?api=1&query=${q}`,am=`https://maps.apple.com/?q=${q}`;
  const mas=EXTRA[id]?`<div class="blk mas"><div class="lbl">📖 La guía completa</div>${(function(tx){const sents=tx.split('. ').map((s,i,arr)=>i<arr.length-1?s+'.':s);const paras=[];let cur='';sents.forEach(s=>{if(cur&&(cur.length+s.length)>420){paras.push(cur);cur=s}else cur=cur?cur+' '+s:s});if(cur)paras.push(cur);return paras.map(par=>`<p>${esc(par)}</p>`).join('')})(EXTRA[id])}</div>`:'';
  $('#sheetInner').innerHTML=`<button class="back" onclick="closeSheet()">‹ Atrás</button>
@@ -1112,7 +1112,7 @@ openPlace=function(id){const p=P[id];if(!p)return;
  <div class="blk"><div class="lbl">✅ Consejos</div>${p.t.map(t=>`<div class="tip">${esc(t)}</div>`).join('')}</div>
  ${mas}
  <div class="blk"><div class="lbl">ℹ️ Datos prácticos <span style="text-transform:none;letter-spacing:0;font-weight:600">(orientativo jul-2026)</span></div>
-  <div class="datos"><div class="row"><div class="k">Horario</div><div class="v">${esc(p.hor)}</div></div>
+  <div class="datos">${p.dir?`<div class="row"><div class="k">Dirección</div><div class="v">${esc(p.dir)}</div></div>`:''}<div class="row"><div class="k">Horario</div><div class="v">${esc(p.hor)}</div></div>
   <div class="row"><div class="k">Precio</div><div class="v">${esc(p.pre)}</div></div>
   ${p.gos?`<div class="row"><div class="k">Goshuin</div><div class="v gosh">${esc(p.gos)}</div></div>`:''}</div></div>
  <div class="visita">📅 Se visita: ${esc(p.dia)}</div>
@@ -1280,7 +1280,7 @@ renderLug=function(){const qv=($('#q').value||'').toLowerCase();ST.q=qv;ST.cat=c
   const h=document.createElement('div');h.className='cityh';
   h.innerHTML=`<span class="st">${CITY_IC[city]||'📍'}</span><b>${city}</b>`;r.appendChild(h);
   items.forEach(([id,p])=>{const el=document.createElement('div');el.className='pl';
-   const maps=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.n+' '+p.city+' Japan')}`;
+   const maps=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.dir?p.dir+', Japan':p.n+' '+p.city+' Japan')}`;
    el.innerHTML=`<div class="ki" style="background:${CAT_COL[p.cat]||'#3d5af1'}">${p.k}</div>
    <div class="tt"><b>${esc(p.n)} ${FAV[id]?'⭐':''}</b><small>${VIS[id]?'<span class="vbadge">✔ visitado</span> · ':''}${esc(p.cat)} · ${esc(p.dia)}${p.gos?' · <span class="goshuinbadge">Goshuin</span>':''}</small></div>
    <div class="btns"><button class="info">ℹ Info</button><a class="maps" target="_blank" rel="noopener" href="${maps}">📍</a></div>`;
@@ -1518,6 +1518,7 @@ loadFoto=async function(id){const img=document.getElementById('pfoto');
  +'<div class="gform"><input id="np_n" placeholder="Nombre del lugar">'
  +'<div class="dos"><select id="np_city"></select><select id="np_cat"></select></div>'
  +'<input id="np_d" placeholder="Descripción corta">'
+ +'<input id="np_dir" placeholder="Dirección (opcional, para el mapa exacto)">'
  +'<textarea id="np_s" placeholder="Dato curioso (¿Sabíais que…?, opcional)"></textarea>'
  +'<textarea id="np_tips" placeholder="Consejos, uno por línea (opcional)"></textarea>'
  +'<input id="np_dia" placeholder="Cuándo se visita (ej: día 19 · 19 sep)">'
@@ -1540,14 +1541,14 @@ loadFoto=async function(id){const img=document.getElementById('pfoto');
   const id='c_'+n.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,20)+Math.floor(Math.random()*99);
   const tipsVal=c.querySelector('#np_tips').value.split('\n').map(x=>x.trim()).filter(Boolean);
   PC.places[id]={n,k:n.slice(0,1).toUpperCase(),city:citySel.value,cat:catSel.value,c1:'#3d5af1',
-   d:c.querySelector('#np_d').value.trim()||'Lugar añadido por ti.',
+   d:c.querySelector('#np_d').value.trim()||'Lugar añadido por ti.',dir:c.querySelector('#np_dir').value.trim()||null,
    s:c.querySelector('#np_s').value.trim()||'Añadido a mano a la guía — la mejor señal de que el viaje es vuestro.',
    t:tipsVal.length?tipsVal:['Añadido manualmente; edita borrando y recreando si cambia algo.'],
    hor:c.querySelector('#np_hor').value.trim()||'—',pre:c.querySelector('#np_pre').value.trim()||'—',
    gos:c.querySelector('#np_gos').value.trim()||null,dia:c.querySelector('#np_dia').value.trim()||'—'};
   const u=c.querySelector('#np_img').value.trim();if(u){PC.imgs=PC.imgs||{};PC.imgs[id]=u}
   await pcSave();pcApply();renderLug();paintCustom();hap(15);
-  ['np_n','np_d','np_s','np_tips','np_dia','np_hor','np_pre','np_gos','np_img'].forEach(x=>c.querySelector('#'+x).value='');};
+  ['np_n','np_d','np_dir','np_s','np_tips','np_dia','np_hor','np_pre','np_gos','np_img'].forEach(x=>c.querySelector('#'+x).value='');};
  window._paintCustom=paintCustom;
 })();
 /* [4] SINCRONIZACIÓN por código */
@@ -2153,6 +2154,7 @@ renderDias();if(window.renderDiario)renderDiario();
  form.innerHTML='<input id="np_n" placeholder="Nombre del lugar">'
  +'<div class="dos"><select id="np_city"></select><select id="np_cat"></select></div>'
  +'<input id="np_d" placeholder="Descripción corta">'
+ +'<input id="np_dir" placeholder="Dirección (opcional, para el mapa exacto)">'
  +'<textarea id="np_s" placeholder="Dato curioso (¿Sabíais que…?, opcional)"></textarea>'
  +'<textarea id="np_tips" placeholder="Consejos, uno por línea (opcional)"></textarea>'
  +'<div class="dos"><select id="np_day" style="flex:2"><option value="-1">Sin día concreto</option></select>'
@@ -2184,7 +2186,7 @@ renderDias();if(window.renderDiario)renderDiario();
   const tipsVal=form.querySelector('#np_tips').value.split('\n').map(x=>x.trim()).filter(Boolean);
   PC.places=PC.places||{};
   PC.places[id]={n,k:n.slice(0,1).toUpperCase(),city:citySel.value,cat:catSel.value,c1:'#e3b04b',
-   d:form.querySelector('#np_d').value.trim()||'Lugar añadido por ti.',
+   d:form.querySelector('#np_d').value.trim()||'Lugar añadido por ti.',dir:form.querySelector('#np_dir').value.trim()||null,
    s:form.querySelector('#np_s').value.trim()||'Añadido a mano a la guía — la mejor señal de que el viaje es vuestro.',
    t:tipsVal.length?tipsVal:['Añadido manualmente; bórralo y recréalo si cambia algo.'],
    hor:form.querySelector('#np_hor').value.trim()||'—',pre,gos:form.querySelector('#np_gos').value.trim()||null,
@@ -2195,7 +2197,7 @@ renderDias();if(window.renderDiario)renderDiario();
    arr.push([time||'—',n,'Añadido por ti',id]);
    await stSet('j26_acts',ACTS);}
   if(window._paintCustom)_paintCustom();hap(15);
-  ['np_n','np_d','np_s','np_tips','np_time','np_hor','np_pre','np_gos','np_img'].forEach(x=>form.querySelector('#'+x).value='');
+  ['np_n','np_d','np_dir','np_s','np_tips','np_time','np_hor','np_pre','np_gos','np_img'].forEach(x=>form.querySelector('#'+x).value='');
   daySel.value='-1';
   alert(dayIdx>=0?('«'+n+'» añadido a la guía Y al día '+(dayIdx+1)+(time?' a las '+time:'')+'. Colócalo en su orden con ✏️ Editar → ▲▼.'):('«'+n+'» añadido a Lugares.'));};
 })();
@@ -4018,6 +4020,7 @@ async function openActForm(pos,ai){
  +'<div class="ficFields'+(curPlace?' on':'')+'" id="af_ficFields">'
  +'<div class="dos"><select id="af_city"></select><select id="af_cat"></select></div>'
  +'<input id="af_d" placeholder="Descripción corta">'
+ +'<input id="af_dir" placeholder="Dirección (opcional, para el mapa exacto)">'
  +'<textarea id="af_s" placeholder="Dato curioso (¿Sabíais que…?, opcional)"></textarea>'
  +'<textarea id="af_tips" placeholder="Consejos, uno por línea (opcional)"></textarea>'
  +'<div class="dos"><input id="af_hor" placeholder="Horario del sitio"><input id="af_pre" placeholder="Precio"></div>'
@@ -4033,6 +4036,7 @@ async function openActForm(pos,ai){
  m.querySelector('#af_t').value=cur[1]||'';
  m.querySelector('#af_n').value=cur[2]||'';
  m.querySelector('#af_d').value=curPlace?curPlace.d||'':'';
+ m.querySelector('#af_dir').value=curPlace?curPlace.dir||'':'';
  m.querySelector('#af_s').value=curPlace?curPlace.s||'':'';
  m.querySelector('#af_tips').value=curPlace&&curPlace.t?curPlace.t.join('\n'):'';
  m.querySelector('#af_hor').value=curPlace?curPlace.hor||'':'';
@@ -4060,6 +4064,7 @@ async function openActForm(pos,ai){
   const n=m.querySelector('#af_n').value.trim()||null;
   const ficOn=m.querySelector('#af_ficFields').classList.contains('on');
   const d=m.querySelector('#af_d').value.trim();
+  const dirVal=m.querySelector('#af_dir').value.trim();
   const sVal=m.querySelector('#af_s').value.trim();
   const tipsVal=m.querySelector('#af_tips').value.split('\n').map(x=>x.trim()).filter(Boolean);
   const hor=m.querySelector('#af_hor').value.trim();
@@ -4067,11 +4072,11 @@ async function openActForm(pos,ai){
   const gosVal=m.querySelector('#af_gos').value.trim();
   const img=m.querySelector('#af_img').value.trim();
   let id=curId;
-  if(ficOn&&(d||hor||pre||img||sVal||tipsVal.length||gosVal)){
+  if(ficOn&&(d||dirVal||hor||pre||img||sVal||tipsVal.length||gosVal)){
    id=id||slugId(t);
    PC.places=PC.places||{};
    PC.places[id]={n:t,k:t.slice(0,1).toUpperCase(),city:citySel.value,cat:catSel.value,c1:CAT_COL[catSel.value]||'#3d5af1',
-    d:d||'Lugar añadido por ti.',
+    d:d||'Lugar añadido por ti.',dir:dirVal||null,
     s:sVal||'Añadido a mano a la guía — la mejor señal de que el viaje es vuestro.',
     t:tipsVal.length?tipsVal:['Añadido manualmente; edítalo desde aquí si cambia algo.'],
     hor:hor||'—',pre:pre||'—',gos:gosVal||null,
