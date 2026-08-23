@@ -3615,6 +3615,10 @@ async function mergeContentList(k,list,mine,remoteMT){
  await stSetLocal(k,Object.values(outMap));await stSetLocal(mtKey,outMT);}
 /* devuelve true si de verdad cambió algo que importe mostrar: las fotos NO
    cuentan (se repintan solas más abajo), así no hace falta recargar por ellas */
+function stableStr(x){
+ if(Array.isArray(x))return '['+x.map(stableStr).join(',')+']';
+ if(x&&typeof x==='object')return '{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+stableStr(x[k])).join(',')+'}';
+ return JSON.stringify(x);}
 async function mergeApply(data){
  let meaningful=false;
  for(const[k,v0]of Object.entries(data)){if(k.startsWith('_')||k.endsWith('_mt'))continue;
@@ -3625,14 +3629,14 @@ async function mergeApply(data){
    if(typeof v==='string')continue;}
   const mine=await stGet(k);
   if(k==='j26_vis'||k==='j26_fav'||k==='j26_todos'){
-   const before=JSON.stringify(mine||{});
+   const before=stableStr(mine||{});
    await mergeToggleMap(k,v,mine||{},data[k+'_mt']||{});
-   if(JSON.stringify(await stGet(k))!==before)meaningful=true;
+   if(stableStr(await stGet(k))!==before)meaningful=true;
    continue}
   if(k==='j26_misdatos'){
-   const before=JSON.stringify(mine||[]);
+   const before=stableStr(mine||[]);
    await mergeContentList(k,v,mine||[],data[k+'_mt']||{});
-   if(JSON.stringify(await stGet(k))!==before)meaningful=true;
+   if(stableStr(await stGet(k))!==before)meaningful=true;
    continue}
   if(k==='j26_fotourls'){
    /* cada móvil pesca su foto de Wikipedia por su cuenta y nunca se corrige sola:
@@ -3644,10 +3648,10 @@ async function mergeApply(data){
    await stSetLocal(k,out);continue}
   if(mine==null){await stSetLocal(k,v);meaningful=true;continue}
   if(k==='j26_priv'){const out=Object.assign({},mine);Object.entries(v).forEach(([a,b])=>{if(!out[a]||!(''+out[a]).trim())out[a]=b});
-   if(JSON.stringify(out)!==JSON.stringify(mine))meaningful=true;await stSetLocal(k,out)}
+   if(stableStr(out)!==stableStr(mine))meaningful=true;await stSetLocal(k,out)}
   else if(k==='j26_custom'){const out={places:Object.assign({},(v||{}).places,(mine||{}).places),imgs:Object.assign({},(v||{}).imgs,(mine||{}).imgs)};
-   if(JSON.stringify(out)!==JSON.stringify(mine))meaningful=true;await stSetLocal(k,out)}
-  else if(typeof v==='object'&&v&&typeof mine==='object'&&mine&&JSON.stringify(v)!==JSON.stringify(mine)){
+   if(stableStr(out)!==stableStr(mine))meaningful=true;await stSetLocal(k,out)}
+  else if(typeof v==='object'&&v&&typeof mine==='object'&&mine&&stableStr(v)!==stableStr(mine)){
    /* resto de mapas/listas (hoteles editados, actividades por d\u00eda, metadatos de d\u00eda...):
       el \u00faltimo cambio remoto sustituye entero \u2014 sin esto, comparar reordenando claves
       pod\u00eda marcar "cambi\u00f3 algo" en cada snapshot aunque el contenido fuera igual,
