@@ -21,6 +21,7 @@ Para ver qué cambió exactamente en un commit: `git show <hash>`.
 
 | Fecha | Commit | Qué cambia |
 |---|---|---|
+| 2026-08-23 | `0f81d9a` | Arregla bucle de recargas infinito con dos dispositivos abiertos a la vez: la comparación de "¿cambió algo?" no ignoraba el orden de las claves, así que dos copias iguales pero reconstruidas en distinto orden se marcaban como distintas sin parar |
 | 2026-08-23 | `f490464` | Campo Dirección editable en lugares personalizados: se usa para el enlace a Maps en vez de solo nombre+ciudad (útil para actividades genéricas como "Ceremonia del té" que no geolocalizan bien) |
 | 2026-08-22 | `21fbd98` | Autorepara actividades/pendientes corruptos al abrir la app (no solo al sincronizar) — un móvil que se quedó con datos rotos de antes ya no bloqueaba la navegación a los días |
 | 2026-08-22 | `88ded1e` | Arregla que las actividades del día (doblemente codificadas por un dispositivo con código antiguo) rompieran la navegación por días; añade los pendientes propios (`j26_pendu`) a la sincronización, antes se borraban solos |
